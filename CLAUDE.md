@@ -8,8 +8,7 @@ Tracked in Linear: team A1, project a1.MeirionPritchard.
   content model, routes, motion approach.
 - Interactions: `log.meirion-decisions` (Linear doc, D001–D022) — every locked
   behaviour and exact value.
-- Reference: the A1-6 prototype `mdp-work-prototype.html`. Build to match it,
-  reviewed side-by-side.
+- Reference: the prototype at `/reference/mdp-work-prototype.html` in this repo. Build to match it, reviewed side-by-side.
 
 ## Stack
 Next.js (App Router) + React + TypeScript · Tailwind v4 with CSS-variable
