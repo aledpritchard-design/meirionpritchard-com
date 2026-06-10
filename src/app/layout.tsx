@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 import { siteName } from "@/lib/site";
+import { PageShell } from "@/components/frame";
 
 export const metadata: Metadata = {
   title: siteName,
@@ -15,7 +16,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en-GB">
-      <body>{children}</body>
+      <body>
+        <PageShell>{children}</PageShell>
+      </body>
     </html>
   );
 }

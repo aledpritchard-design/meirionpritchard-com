@@ -1,18 +1,184 @@
 @import "tailwindcss";
 
-/* Foundation baseline only. The prototype's design tokens, typography and
-   colour system are ported in A1-10 (FRAME). */
+@theme {
+  --color-ink: #000000;
+  --color-paper: #ffffff;
+}
+
+/* =====================================================
+   Design tokens — sourced from
+   /reference/mdp-work-prototype.html (D007)
+   ===================================================== */
+:root {
+  /* Colour */
+  --ink: #000000;
+  --paper: #ffffff;
+  --border: 2px solid #000000;
+
+  /* Spacing */
+  --pad-outer: 32px;
+  --nav-pad: 32px;
+  --row-pad-x: 15px;
+  --row-pad-y: 10px;
+  --row-gap: 25px;
+  --divider-h: 80px;
+
+  /* Typography */
+  --fs-hero: 75px;
+  --fs-nav: 25px;
+  --fs-row: 75px;
+  --row-weight: 400;
+
+  /* Panel type */
+  --fs-block-lg: 75px;
+  --fs-block-sm: 25px;
+  --block-pad: 20px;
+  --block-pad-x: 18px;
+}
+
+@media (max-width: 1024px) {
+  :root {
+    --fs-row: 45px;
+    --row-weight: 500;
+    --divider-h: 60px;
+    --fs-block-lg: 45px;
+  }
+}
+
+@media (max-width: 640px) {
+  :root {
+    --pad-outer: 16px;
+    --row-pad-y: 6px;
+    --row-gap: 12px;
+    --divider-h: 30px;
+    --fs-hero: 55px;
+    --fs-nav: 18px;
+    --fs-row: 18px;
+    --row-weight: 700;
+    --fs-block-lg: 20px;
+    --fs-block-sm: 16px;
+    --block-pad: 12px;
+    --block-pad-x: 12px;
+  }
+}
+
+/* =====================================================
+   Base
+   ===================================================== */
 html,
 body {
   height: 100%;
-}
-
-body {
-  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 a {
   color: inherit;
+}
+
+/* =====================================================
+   Frame — component styles (matched to prototype)
+   ===================================================== */
+
+/* Page shell */
+.page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Site header */
+.s-header {
+  display: flex;
+  flex-direction: column;
+  padding: var(--pad-outer) var(--pad-outer) 0 var(--pad-outer);
+}
+
+/* Nav bar */
+.c-nav {
+  border: var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--nav-pad);
+}
+.c-nav .marks {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.mark {
+  background: var(--ink);
+  flex-shrink: 0;
+}
+.mark-rect  { width: 41px; height: 40px; }
+.mark-circle { width: 40px; height: 40px; border-radius: 100px; }
+.mark-42 { width: 42px; height: 42px; }
+
+/* Hero bar */
+.hero {
+  border: var(--border);
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  padding: 32px 16px;
+  margin-top: -2px;
+}
+.hero h1 {
+  font-size: var(--fs-hero);
+  font-weight: 400;
+  letter-spacing: 0.25px;
+  line-height: normal;
+  white-space: nowrap;
+}
+
+/* Nav rows */
+.nav-row {
+  display: flex;
+  width: 100%;
+  margin-top: -2px;
+}
+.nav-item {
+  border: var(--border);
+  flex: 1 0 0;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px 15px;
+}
+.nav-item + .nav-item {
+  margin-left: -2px;
+}
+.nav-item .bullet {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+  flex-shrink: 0;
+  display: block;
+}
+.nav-item .nav-label {
+  font-size: var(--fs-nav);
+  font-weight: 700;
+  letter-spacing: 0.25px;
+}
+
+/* Work section */
+.s-work {
+  display: flex;
+  flex-direction: column;
+  padding: 0 var(--pad-outer) var(--pad-outer) var(--pad-outer);
+}
+
+/* =====================================================
+   Responsive overrides
+   ===================================================== */
+@media (max-width: 640px) {
+  .c-nav { padding: 32px 16px; }
+  .c-nav .marks { gap: 12px; }
+  .nav-item { gap: 8px; padding: 10px 15px; }
+  .nav-item .bullet { width: 13px; height: 13px; }
 }
