@@ -1,0 +1,98 @@
+/* ============================================================
+   Meirion Pritchard — Work section
+   Design tokens, extracted from the A1-6 prototype
+   (mdp-work-prototype.html). The single source for the build's
+   token layer (A1-10 / FRAME). Values are canon —
+   see log.meirion-decisions D007–D022.
+   ============================================================ */
+
+:root {
+  /* ---- Colour --------------------------------------------- */
+  --ink:        #000000;   /* lines, type, dark fill */
+  --paper:      #ffffff;   /* base background, row fill */
+  --hover-ink:  #b24d66;   /* MM TXT-2 — hover/active text + divider (colour & solid modes) */
+  --hover-red:  #eb5757;   /* Red — hover text in image mode */
+  --dot-grey:   #ebebeb;   /* dot field in a vacated sort slot */
+
+  /* hovered / active / open row fill — 90% so the backdrop bleeds through (D022) */
+  --hover-fill:      rgba(255, 255, 255, 0.9);   /* light */
+  --hover-fill-dark: rgba(0, 0, 0, 0.9);         /* dark mode */
+
+  /* solid-mode hue-ramp endpoints (D015 / D021); per-row colours
+     interpolate across list order on the short HSL path 345° → 189° */
+  --ramp-start: #b24d66;
+  --ramp-end:   #58d1e6;
+
+  /* ---- Border --------------------------------------------- */
+  --border: 2px solid var(--ink);   /* every cell; adjacent borders collapse via -2px margins (D009) */
+
+  /* ---- Spacing & layout ----------------------------------- */
+  --pad-outer:   32px;   /* section outer padding */
+  --nav-pad:     32px;
+  --row-pad-x:   15px;
+  --row-pad-y:   10px;
+  --row-gap:     25px;
+  --divider-h:   80px;   /* vertical divider in a row */
+  --block-pad:   20px;   /* open-panel block padding */
+  --block-pad-x: 18px;
+
+  /* ---- Type ----------------------------------------------- */
+  /* family: "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: 0.25px */
+  --fs-hero:     75px;
+  --fs-nav:      25px;
+  --fs-row:      75px;   /* project rows */
+  --row-weight:  400;    /* Regular */
+  --fs-block-lg: 75px;   /* open-panel large body */
+  --fs-block-sm: 25px;   /* open-panel small body / bars / results / credits */
+
+  /* ---- Motion (D010 / D019 / D020 / D022) ----------------- */
+  --anim-dur:        600ms;    /* hover backdrop fades */
+  --panel-dur:       1200ms;   /* accordion OPEN */
+  --panel-close-dur: 600ms;    /* accordion CLOSE (faster) */
+  --flip-dur:        600ms;    /* row reorder (FLIP) */
+  --fade-dur:        900ms;    /* scroll fade-in */
+  --anim-ease:       ease-out;
+}
+
+/* ---- Tablet ≤1024px --------------------------------------- */
+@media (max-width: 1024px) {
+  :root {
+    --fs-row:      45px;
+    --row-weight:  500;   /* Medium */
+    --divider-h:   60px;
+    --fs-block-lg: 45px;
+  }
+}
+
+/* ---- Mobile ≤640px ---------------------------------------- */
+@media (max-width: 640px) {
+  :root {
+    --pad-outer:   16px;
+    --row-pad-x:   15px;
+    --row-pad-y:   6px;
+    --row-gap:     12px;
+    --divider-h:   30px;
+    --fs-hero:     55px;
+    --fs-nav:      18px;
+    --fs-row:      18px;
+    --row-weight:  700;   /* Bold */
+    --fs-block-lg: 20px;
+    --fs-block-sm: 16px;
+    --block-pad:   12px;
+    --block-pad-x: 12px;
+  }
+}
+
+/* ============================================================
+   Non-variable constants — carry into the build as named values
+   ------------------------------------------------------------
+   Font stack         "Helvetica Neue", Helvetica, Arial, sans-serif
+   Letter-spacing     0.25px on display / row type
+   Border collapse    adjacent 2px borders share one line via -2px margins (D009)
+   Sort state icon    16px circle, 2px border — outline = off, fill = descending, asterisk = ascending (D021)
+   Drag handle        18px box, four 2px dots at the corners (D021)
+   Drag lift          dragged cell inverts (ink fill / paper text + dots); vacated slot = --dot-grey dot field (D021)
+   Mobile active line 27% of viewport height; arms after 100px scroll; 75vh bottom spacer until the footer exists (D016 / D022)
+   Scroll fade        pre-triggers 25% below the fold (D022)
+   Image aspect ratios  frame 1764/972.5 · portrait 576/972.5 · square 875/972.5 · tall 869/972.5 (D008)
+   ============================================================ */

@@ -1,0 +1,1232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meirion Pritchard — Work</title>
+<style>
+  /* ============================================================
+     Meirion Pritchard — Work section
+     Step 1: structure + responsiveness (closed list)  [D007]
+     Step 2: accordion open/close + project block library
+     Built to Figma: 1:192 / 3:1384 / 1:478 / 1:590 (closed),
+                     4:1444 (desktop open), 4:2172 (mobile open)
+     ============================================================ */
+
+  :root {
+    --ink: #000000;
+    --paper: #ffffff;
+    --border: 2px solid var(--ink);
+    --hover-ink: #b24d66;   /* MM – TXT – Colors/TXT-2, per Figma 41:6084 */
+    --hover-red: #eb5757;   /* Red token — full-image hover mode, per Figma 41:7573 */
+    --hover-fill: rgba(255, 255, 255, 0.9);  /* hovered/active row: white at 90% — backdrop bleeds through slightly */
+    --hover-fill-dark: rgba(0, 0, 0, 0.9);   /* dark mode equivalent */
+
+    --pad-outer: 32px;
+    --nav-pad: 32px;
+    --row-pad-x: 15px;
+    --row-pad-y: 10px;
+    --row-gap: 25px;
+    --divider-h: 80px;
+
+    --fs-hero: 75px;
+    --fs-nav: 25px;
+    --fs-row: 75px;
+    --row-weight: 400;
+
+    /* project panel type */
+    --fs-block-lg: 75px;   /* large body / intro / quote */
+    --fs-block-sm: 25px;   /* small body, results, credits, bars */
+    --block-pad: 20px;
+    --block-pad-x: 18px;
+
+    /* motion */
+    --anim-dur: 600ms;        /* hover backdrop fades */
+    --panel-dur: 1200ms;      /* accordion OPEN */
+    --panel-close-dur: 600ms; /* accordion CLOSE (faster) */
+    --flip-dur: 600ms;        /* row reorder (FLIP) when factor order changes */
+    --fade-dur: 900ms;     /* scroll fade-in */
+    --anim-ease: ease-out;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { background: var(--paper); }
+  /* body must stay transparent: its own background would paint OVER
+     the fixed gradient layer (body::before, z-index -1) and hide it */
+  body {
+    color: var(--ink);
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .page { display: flex; flex-direction: column; min-height: 100vh; }
+
+  /* ---- header ------------------------------------------------- */
+  .s-header {
+    display: flex; flex-direction: column;
+    padding: var(--pad-outer) var(--pad-outer) 0 var(--pad-outer);
+  }
+  .c-nav {
+    border: var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+    padding: var(--nav-pad);
+  }
+  .c-nav .marks { display: flex; align-items: center; gap: 16px; }
+
+  /* placeholder marks per Figma node 3:2175 */
+  .mark { background: var(--ink); flex-shrink: 0; }
+  .mark-rect { width: 41px; height: 40px; }
+  .mark-circle { width: 40px; height: 40px; border-radius: 100px; }
+  .mark-42 { width: 42px; height: 42px; }
+
+  .hero {
+    border: var(--border);
+    display: flex; align-items: center; overflow: hidden;
+    padding: 32px 16px;
+  }
+  .hero h1 {
+    font-size: var(--fs-hero); font-weight: 400;
+    letter-spacing: 0.25px; line-height: normal; white-space: nowrap;
+  }
+
+  .nav-row { display: flex; width: 100%; }
+  .nav-item {
+    border: var(--border); flex: 1 0 0; min-width: 0;
+    display: flex; align-items: center; gap: 15px; padding: 20px 15px;
+  }
+  .nav-item .bullet {
+    width: 16px; height: 16px; border: 2px solid var(--ink);
+    border-radius: 50%; flex-shrink: 0;
+  }
+  .nav-item span {
+    font-size: var(--fs-nav); font-weight: 700; letter-spacing: 0.25px;
+  }
+  /* sort/filter labels fill the cell so end glyphs sit at the edges */
+  .nav-item .nav-label { flex: 1 0 0; min-width: 0; }
+  .nav-item.right { justify-content: flex-end; }
+  .nav-item.right .nav-label { text-align: right; }
+
+  /* factor state icon (Figma 41:6201 etc): outline = off, filled =
+     on/descending, asterisk = on/ascending */
+  .state-icon {
+    width: 16px; height: 16px; flex-shrink: 0; box-sizing: border-box;
+    border: 2px solid var(--ink); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; line-height: 1; color: var(--ink);
+  }
+  .state-icon.fill { background: var(--ink); }
+  .state-icon.star { border-color: transparent; overflow: visible; }
+
+  /* 4-dot grab handle (Figma 50:7622): 2px dots pinned to the four
+     corners of an 18px box */
+  .drag-handle {
+    position: relative; width: 18px; height: 18px; flex-shrink: 0;
+    cursor: grab; touch-action: none;
+  }
+  .drag-handle i {
+    position: absolute; width: 2px; height: 2px;
+    border-radius: 50%; background: var(--ink);
+  }
+  .drag-handle i:nth-child(1) { top: 0; left: 0; }
+  .drag-handle i:nth-child(2) { top: 0; right: 0; }
+  .drag-handle i:nth-child(3) { bottom: 0; left: 0; }
+  .drag-handle i:nth-child(4) { bottom: 0; right: 0; }
+
+  /* sort factor cells: outer half toggles (pointer cursor), inner half
+     drags. The drag-zone overlay covers the inner half to show grab. */
+  .sort-cell { cursor: pointer; position: relative; }
+  .drag-zone { position: absolute; top: 0; bottom: 0; width: 50%; cursor: grab; }
+  .sort-cell:not(.right) .drag-zone { right: 0; }   /* dots on the right → inner half is right */
+  .sort-cell.right .drag-zone { left: 0; }          /* dots on the left → inner half is left */
+  .drag-zone:active { cursor: grabbing; }
+  .sort-cell.drop-target { background: rgba(0, 0, 0, 0.08); }
+  /* vacated slot (factor lifted out): content hidden, filled with a
+     dot field (Figma 50:7544 "dot pattern") */
+  .sort-cell.vacated > * { visibility: hidden; }
+  .sort-cell.vacated::after {
+    content: ""; position: absolute; inset: 0;
+    background-image: radial-gradient(#ebebeb 1.5px, transparent 1.6px);
+    background-size: 14px 14px; background-position: center;
+  }
+
+  /* drag ghost: outer follows the pointer; the lifted cell inverts
+     (black fill, white text/icon/dots) per Figma 50:7544 */
+  .drag-ghost { position: fixed; z-index: 10; pointer-events: none; }
+  .drag-ghost.flying { transition: left 200ms var(--anim-ease), top 200ms var(--anim-ease); }
+  .drag-ghost > .nav-item { width: 100%; height: 100%; margin: 0; background: var(--paper); }
+  .drag-ghost > .nav-item.inverted { background: var(--ink); }
+  .drag-ghost > .nav-item.inverted .nav-label { color: var(--paper); }
+  .drag-ghost > .nav-item.inverted .state-icon { border-color: var(--paper); color: var(--paper); }
+  .drag-ghost > .nav-item.inverted .state-icon.fill { background: var(--paper); }
+  .drag-ghost > .nav-item.inverted .state-icon.star { border-color: transparent; }
+  .drag-ghost > .nav-item.inverted .drag-handle i { background: var(--paper); }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drag-ghost.flying, .drag-ghost > .nav-item { transition: none; }
+  }
+
+  /* ---- work section ------------------------------------------ */
+  .s-work {
+    display: flex; flex-direction: column;
+    padding: 0 var(--pad-outer) var(--pad-outer) var(--pad-outer);
+  }
+
+  .row {
+    border: var(--border);
+    display: flex; align-items: center; gap: var(--row-gap);
+    overflow: hidden; padding: var(--row-pad-y) var(--row-pad-x);
+    cursor: pointer;
+  }
+  .row .label {
+    font-size: var(--fs-row); font-weight: var(--row-weight);
+    letter-spacing: 0.25px; line-height: normal; white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .row .divider {
+    width: 2px; height: var(--divider-h); background: var(--ink);
+    flex-shrink: 0;
+  }
+  .row .value {
+    font-size: var(--fs-row); font-weight: var(--row-weight);
+    letter-spacing: 0.25px; line-height: normal;
+    flex: 1 0 0; min-width: 0; text-align: right;
+  }
+  /* open row: bottom border drops so it joins the panel */
+  .row.is-open { border-bottom: none; }
+
+  /* ---- hover: colour mode (Figma 41:6084) ---------------------
+     Hovering any row reveals a full-page gradient behind the list;
+     the hovered row alone goes solid white with coloured text.
+     Gradient layer fades on the shared motion spec. */
+  body::before {
+    content: "";
+    position: fixed; inset: 0; z-index: -1;
+    /* CSS approximation of Figma "Asset: Fullscreen" (41:6085) —
+       real gradient asset drops in at production */
+    background:
+      radial-gradient(60% 70% at 12% 8%,  #e05848 0%, transparent 62%),
+      radial-gradient(50% 60% at 86% 12%, #b9b3e6 0%, transparent 60%),
+      radial-gradient(45% 55% at 96% 72%, #a9c6e8 0%, transparent 60%),
+      radial-gradient(55% 50% at 48% 96%, #f3e3c3 0%, transparent 65%),
+      radial-gradient(40% 60% at 4% 58%,  #c44b62 0%, transparent 60%),
+      radial-gradient(50% 50% at 42% 45%, #e08a9b 0%, transparent 70%),
+      #eb5757;
+    opacity: 0;
+    transition: opacity var(--anim-dur) var(--anim-ease);
+    pointer-events: none;
+  }
+  /* backdrop visibility is JS-driven (.backdrop-on): it follows the
+     highlighted row, persists while a project is open and the cursor
+     stays within the list's vertical bounds, and clears when the
+     cursor exits above the first row / below the last */
+  body:not(.image).backdrop-on::before { opacity: 1; }
+
+  /* solid-colour hover mode (Figma 41:2107): third Image state —
+     the backdrop is a flat fill instead of the gradient. Each row has
+     its own colour on a hue ramp: #B24D66 (first) -> #F2744A (last);
+     --hover-solid is set on mouseenter from the row's ramp colour. */
+  body.solid::before { background: var(--hover-solid, var(--hover-ink)); }
+
+  /* open/active row text matches its own ramp colour in solid mode */
+  body.solid .row.is-open .label,  body.solid .row.is-active .label,
+  body.solid .row.is-open .value,  body.solid .row.is-active .value { color: var(--row-solid, var(--hover-ink)); }
+  body.solid .row.is-open .divider, body.solid .row.is-active .divider { background: var(--row-solid, var(--hover-ink)); }
+
+  /* full-image hover mode (Figma 41:7573): Image state swaps the
+     gradient backdrop for the project's full-bleed photo. Two
+     stacked layers so row-to-row changes CROSSFADE: JS points the
+     back layer at the new image and promotes it to .front. */
+  .bg-img {
+    position: fixed; inset: 0; z-index: -1;
+    background: center / cover no-repeat;
+    opacity: 0;
+    transition: opacity var(--anim-dur) var(--anim-ease);
+    pointer-events: none;
+  }
+  body.image.backdrop-on .bg-img.front { opacity: 1; }
+
+  /* image mode: open/active row text goes Red instead of TXT-2 */
+  body.image .row.is-open .label,  body.image .row.is-active .label,
+  body.image .row.is-open .value,  body.image .row.is-active .value { color: var(--hover-red); }
+  body.image .row.is-open .divider, body.image .row.is-active .divider { background: var(--hover-red); }
+
+  /* hover + active share one treatment. .is-open = open project;
+     .is-active = the highlighted row — JS-driven on BOTH desktop and
+     mobile (CSS :hover is not re-evaluated during scroll, so a static
+     cursor over a scrolling list lags; JS hit-testing doesn't) */
+  .row.is-open, .row.is-active { background: var(--hover-fill); }
+  .row.is-open .label,  .row.is-active .label,
+  .row.is-open .value,  .row.is-active .value { color: var(--hover-ink); }
+  .row.is-open .divider, .row.is-active .divider { background: var(--hover-ink); }
+
+  /* dark mode (Figma 41:6596) — affects the hover/active fill only:
+     row goes black instead of white, text stays TXT-2. Nothing else
+     changes. Toggled via the Mode nav item. */
+  body.dark .row.is-open, body.dark .row.is-active { background: var(--hover-fill-dark); }
+  /* toggle icons fill when their mode is active (Figma 41:6591) */
+  body.dark .mode-icon, body.image .image-icon { background: var(--ink); }
+  /* third Image state (solid): smaller circle within the outline */
+  .bullet { position: relative; }
+  body.solid .image-icon::after {
+    content: ""; position: absolute; inset: 3px;
+    background: var(--ink); border-radius: 50%;
+  }
+
+  /* Mode / Image are separate click targets inside one nav cell */
+  .nav-item .toggle {
+    display: flex; align-items: center; gap: 15px;
+    flex: 1 0 0; min-width: 0; cursor: pointer;
+  }
+
+  /* collapse borders */
+  .nav-row { margin-top: -2px; }
+  .nav-item + .nav-item { margin-left: -2px; }
+  .row { margin-top: -2px; }
+  .hero { margin-top: -2px; }
+
+  /* ---- project panel (open state) ---------------------------- */
+  /* no borders of its own — every child block carries a full border
+     and collapses via -2px margins, same as the closed rows. A panel
+     border here doubles the block borders (4px sides). */
+  .panel { display: flex; flex-direction: column; }
+
+  /* animating wrapper: height 0 -> content, 600ms ease-out.
+     Carries the -2px collapse so the clip doesn't eat the top border. */
+  .panel-wrap {
+    margin-top: -2px;
+    height: 0; overflow: hidden;
+    transition: height var(--panel-dur) var(--anim-ease);
+  }
+
+  /* scroll reveal: text + imagery fade in as they enter the viewport */
+  .fade { opacity: 0; transition: opacity var(--fade-dur) var(--anim-ease); }
+  .fade.is-visible { opacity: 1; }
+  /* on close, content fade is OFF — the white cells stay opaque and the
+     panel just collapses (content clips with the container)
+  .panel-wrap.closing .fade { opacity: 0; transition: opacity var(--panel-close-dur) ease-in; } */
+  /* downward switch: bottom-anchor the closing panel so its content
+     stays pinned to the boundary next to the new row (clips from the
+     top) instead of sliding down */
+  .panel-wrap.anchor-bottom { display: flex; flex-direction: column; justify-content: flex-end; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .panel-wrap { transition: none; }
+    .fade { transition: none; opacity: 1; }
+    body::before { transition: none; }
+    .bg-img { transition: none; }
+  }
+
+  /* each block is a bordered cell, white */
+  .block {
+    border: var(--border);
+    margin-top: -2px;
+    background: var(--paper);
+    padding: var(--block-pad) var(--block-pad-x);
+  }
+  .block:first-child { margin-top: 0; }
+
+  /* a section bar: circle icon + bold label */
+  .bar {
+    border: var(--border);
+    margin-top: -2px;
+    background: var(--paper);
+    display: flex; align-items: center; gap: 15px;
+    padding: 15px var(--row-pad-x); min-height: 50px;
+  }
+  .bar .bullet {
+    width: 16px; height: 16px; border: 2px solid var(--ink);
+    border-radius: 50%; flex-shrink: 0;
+  }
+  .bar .bar-label {
+    font-size: var(--fs-block-sm); font-weight: 700; letter-spacing: 0.25px;
+    flex: 1 0 0; min-width: 0;
+  }
+  .bar.bar-right { justify-content: flex-end; }
+  .bar.bar-right .bar-label { text-align: right; }
+
+  /* image placeholders — real assets are on Figma localhost.
+     Single placeholder image (mdp-placeholder.jpg, alongside this
+     file) for all imagery; hatch shows if the file is missing. */
+  .img-ph {
+    border: var(--border);
+    background:
+      url("mdp-placeholder.jpg") center / cover no-repeat,
+      repeating-linear-gradient(45deg,
+        #ddd 0, #ddd 1px, transparent 1px, transparent 11px),
+      #f4f4f4;
+    width: 100%;
+  }
+  .img-frame   { aspect-ratio: 1764 / 972.5; }   /* full-width hero */
+  .img-portrait{ aspect-ratio: 576 / 972.5; }     /* tall portrait */
+  .img-square  { aspect-ratio: 875 / 972.5; }
+  .img-tall    { aspect-ratio: 869 / 972.5; }
+
+  .photo-row { display: flex; gap: 20px; }
+  .photo-row .img-ph { flex: 1 0 0; min-width: 0; }
+
+  /* text blocks */
+  .text-lg {
+    font-size: var(--fs-block-lg); font-weight: 400;
+    letter-spacing: 0.25px; line-height: normal;
+  }
+  .text-sm {
+    font-size: var(--fs-block-sm); font-weight: 500; /* Medium */
+    letter-spacing: 0.25px; line-height: normal; white-space: pre-wrap;
+  }
+
+  /* split block: large text + portrait image side by side */
+  .split { display: flex; gap: 25px; align-items: stretch; }
+  .split .split-text {
+    flex: 1 0 0; min-width: 0;
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .split .split-text .secondary {
+    font-size: var(--fs-block-sm); font-weight: 500; max-width: 415px;
+    margin-top: 25px;
+  }
+  .split .img-ph { flex: 1 0 0; min-width: 0; }
+
+  /* results / credits two-column. Columns are flex stacks and each
+     col-body stretches, so both bottom boxes match the taller column
+     — no gap under the shorter (Results) side. */
+  .two-col { display: flex; margin-top: -2px; align-items: stretch; }
+  .two-col > div { flex: 1 0 0; min-width: 0; display: flex; flex-direction: column; }
+  .two-col > div + div { margin-left: -2px; }  /* collapse centre seam */
+  .two-col .col-body { flex: 1 0 auto; }
+  .two-col .col-credits .bar { justify-content: flex-end; }
+  .two-col .col-credits .bar .bar-label { text-align: right; }
+  .two-col .col-credits .text-sm { text-align: right; }
+  .col-body {
+    border: var(--border); margin-top: -2px;
+    background: var(--paper);
+    padding: var(--block-pad) var(--block-pad-x);
+  }
+
+  /* close bar */
+  .close-bar {
+    border: var(--border); margin-top: -2px; background: var(--paper);
+    display: flex; align-items: center; justify-content: flex-end; gap: 15px;
+    padding: 15px var(--row-pad-x); min-height: 50px; cursor: pointer;
+  }
+  .close-bar .close-label {
+    font-size: var(--fs-block-sm); font-weight: 700; letter-spacing: 0.25px;
+  }
+  .close-bar .close-icon {
+    width: 16px; height: 16px; flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; line-height: 1;
+  }
+
+  /* ============================================================
+     RESPONSIVE
+     ============================================================ */
+  /* mobile-only bottom whitespace so the last row can scroll up to the
+     active line (no footer yet) */
+  .scroll-spacer { height: 0; }
+
+  @media (max-width: 1024px) {
+    :root {
+      --fs-row: 45px; --row-weight: 500; --divider-h: 60px;
+      --fs-block-lg: 45px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    :root {
+      --pad-outer: 16px; --row-pad-x: 15px; --row-pad-y: 6px;
+      --row-gap: 12px; --divider-h: 30px;
+      --fs-hero: 55px; --fs-nav: 18px; --fs-row: 18px; --row-weight: 700;
+      --fs-block-lg: 20px; --fs-block-sm: 16px;
+      --block-pad: 12px; --block-pad-x: 12px;
+    }
+    .c-nav { padding: 32px 16px; }
+    .c-nav .marks { gap: 12px; }
+    .nav-item { gap: 8px; padding: 10px 15px; }
+    .nav-item .bullet { width: 13px; height: 13px; }
+    .row .divider { width: 1px; }
+    .bar .bullet, .close-bar .close-icon { width: 13px; height: 13px; }
+    .photo-row { gap: 8px; }
+    .split { flex-direction: column; gap: 12px; }
+    .scroll-spacer { height: 75vh; }          /* runway for the last row to reach the active line */
+    .two-col { flex-direction: column; }     /* results/credits stack */
+    .two-col > div + div { margin-left: 0; margin-top: -2px; }  /* seam collapses vertically when stacked */
+    .two-col .col-credits .bar,
+    .two-col .col-credits .bar .bar-label,
+    .two-col .col-credits .text-sm { text-align: left; justify-content: flex-start; }
+    .split .secondary { display: none; }      /* mobile drops the secondary caption */
+  }
+</style>
+</head>
+<body>
+<!-- image-mode backdrop layers (crossfade pair) -->
+<div class="bg-img" aria-hidden="true"></div>
+<div class="bg-img" aria-hidden="true"></div>
+<div class="page">
+
+  <header class="s-header">
+    <div class="c-nav">
+      <div class="marks">
+        <div class="mark mark-rect" data-name="nav-item-01"></div>
+        <div class="mark mark-circle" data-name="nav-item-02"></div>
+      </div>
+      <div class="marks">
+        <div class="mark mark-circle" data-name="nav-item-03"></div>
+        <div class="mark mark-circle mark-42" data-name="nav-item-04"></div>
+        <div class="mark mark-circle" data-name="nav-item-05"></div>
+      </div>
+    </div>
+
+    <div class="hero"><h1 class="fade">Work</h1></div>
+
+    <!-- sort factor cells (Figma 41:6084), rendered by JS: position =
+         sort priority, icon = direction, black square = grab handle -->
+    <div id="sort-rows"></div>
+    <div class="nav-row">
+      <div class="nav-item">
+        <span class="toggle" id="mode-toggle">
+          <span class="bullet mode-icon fade"></span><span class="nav-label fade">Mode</span>
+        </span>
+        <span class="toggle" id="image-toggle">
+          <span class="nav-label fade" style="text-align:right">Image</span><span class="bullet image-icon fade"></span>
+        </span>
+      </div>
+    </div>
+  </header>
+
+  <main class="s-work" id="work-list"></main>
+
+  <!-- mobile-only: lets the last row scroll up to reach the active line -->
+  <div class="scroll-spacer" aria-hidden="true"></div>
+
+</div>
+
+<script>
+  // ---- data model -------------------------------------------------
+  // A project closed-row shows [title|category|value]; when open it
+  // shows an ordered list of typed blocks. This mirrors the Phase 7
+  // CMS schema: each block type becomes a content type.
+  //
+  // Block types (from Figma 4:1444 / 4:2172):
+  //   photo        — full-width hero image
+  //   photoRow     — 2-up / 3-up image row
+  //   caption      — section bar + body text (size: 'lg' | 'sm')
+  //   split        — large text + portrait image, with secondary caption
+  //   resultsCredits — two-column results (left) / credits (right)
+
+  // row fields per Figma 41:6084: brand | project | category.
+  // `image` = the project's full-bleed hover asset (image mode) \u2014
+  // a per-project CMS field; placeholder stands in for all of them.
+  // `date` = per-project, never rendered on the row; exists for the
+  // Date ordering only. CMS field at Phase 7.
+  const PLACEHOLDER_IMG = "mdp-placeholder.jpg";
+
+  const airEverywhere = {
+    brand: "Nike", project: "Air Everywhere", category: "Campaign",
+    image: PLACEHOLDER_IMG,
+    blocks: [
+      { type: "photo", variant: "frame" },
+      { type: "caption", label: "Intro", size: "lg",
+        text: "The campaign was capped off with a two day Nike By You event at Salone del Mobile in Milan, Italy." },
+      { type: "photoRow", count: 3, variant: "portrait" },
+      { type: "photoRow", count: 2, variant: "square" },
+      { type: "photo", variant: "frame" },
+      { type: "caption", label: "Section title", size: "lg",
+        text: "The campaign took inspiration from Heron Preston\u2019s utilitarian, sustainable brand and combined it with the concept of 360 degrees of air (itself inspired by the shoes\u2019s design where the iconic air bubble wrapped up over the foot), literally re-using scraps from Nike\u2019s top secret Air bubble factory in Beaverton, OR." },
+      { type: "caption", label: "Section title", size: "lg",
+        text: "The campaign was capped off with a two day Nike By You event at Salone del Mobile in Milan, Italy." },
+      { type: "split", label: "Section title",
+        text: "The campaign was capped off with a two day Nike By You event at Salone del Mobile in Milan, Italy.",
+        secondary: "The campaign was capped off with a two day Nike By You event at Salone del Mobile in Milan, Italy." },
+      { type: "caption", label: "Section title", size: "sm",
+        text: "The campaign was capped off with a two day Nike By You event at Salone del Mobile in Milan, Italy. Hosted by Heron himself avid Heron Preston fans and sneaker heads got to work with the materials in-hand and design their very own AirMax 95 or 720. The whole event was broadcast live via Heron\u2019s Instagram channel." },
+      { type: "caption", label: "Section title", size: "sm",
+        text: "The campaign was capped off with a two day Nike By You event at Salone del Mobile in Milan, Italy." },
+      { type: "resultsCredits",
+        results: "We reached over 34M people during Milan\u2019s Salone Del Mobile.\n2400 members registered for the maker workshops with Heron.\nAll 4000 units sold out in one day on Nike.com.",
+        credits: "Creative Director: Meirion Pritchard\nArt Director: Noah Beckwith\nDigital Designers: Allison Olson, Jana Raport\nCreative Producer: Adam Bordow\n\nPhotographer: Thomas Albdorf\nSet Design: Georgina Pragnell" }
+    ]
+  };
+
+  // The real project list, content lifted from Figma 47:7541 (that
+  // frame shows it sorted by category). PROTOTYPE ONLY: every row
+  // reuses the Air Everywhere blocks, and the dates are PLACEHOLDER
+  // values (not real project dates — distinct so Date ordering is
+  // testable; real values come from the CMS).
+  const projects = [
+    ["Wallpaper*",     "Awards",          "360°",        2016],
+    ["Wallpaper*",     "Handmade",        "360°",        2011],
+    ["Nike",           "Air Everywhere",  "Campaign",    2019],
+    ["Nike",           "Air Sesh",        "Campaign",    2020],
+    ["Nike",           "Member Stories",  "Campaign",    2018],
+    ["Nike",           "Space Hippie",    "Campaign",    2021],
+    ["Nike",           "YCSS",            "Campaign",    2017],
+    ["Wallpaper*",     "iPad Edition",    "Digital",     2010],
+    ["Nike",           "HH&Bs",           "Editorial",   2006],
+    ["Nike",           "The Roll Out",    "Editorial",   2007],
+    ["Wallpaper*",     "Director’s Cut",  "Editorial",   2009],
+    ["Wallpaper*",     "Guest Editors 1", "Editorial",   2012],
+    ["Wallpaper*",     "Guest Editors 2", "Editorial",   2013],
+    ["Wallpaper*",     "Sound + Vision",  "Editorial",   2014],
+    ["Bottega Veneta", "Araki",           "Fashion",     2003],
+    ["Bottega Veneta", "Viviane Sassen",  "Fashion",     2004],
+    ["Bottega Veneta", "Waiting Game",    "Fashion",     2005],
+    ["Nike",           "Nike By You",     "Identity",    2022],
+    ["Nike",           "One Nike System", "Identity",    2023],
+    ["Nike",           "Swoosh Journal",  "Identity",    2024],
+    ["Wallpaper*",     "Custom Covers",   "Interactive", 2015],
+    ["The Row",        "Rebrand",         "Logo",        2008],
+    ["Victorinox",     "Wallpaper* Cuts", "Product",     2002],
+    ["Bottega Veneta", "Art of Collab...","Publication", 2001],
+    ["Wallpaper*",     "City Guides",     "Publication", 2000],
+    ["Nike",           "Nike Futura",     "Typography",  1999],
+    ["Wallpaper*",     "Copan",           "Typography",  1998],
+    ["Wallpaper*",     "Graphik",         "Typography",  1997],
+    ["Wallpaper*",     "Premio",          "Typography",  1996]
+  ].map(([brand, project, category, date]) =>
+    project === "Air Everywhere"
+      ? Object.assign(airEverywhere, { date })
+      : { brand, project, category, date, image: PLACEHOLDER_IMG, blocks: airEverywhere.blocks });
+
+  // ---- block renderers -------------------------------------------
+  function imgPh(variantClass) {
+    return '<div class="img-ph fade ' + variantClass + '"></div>';
+  }
+
+  function renderBlock(b) {
+    switch (b.type) {
+      case "photo":
+        return '<div class="block">' + imgPh("img-frame") + '</div>';
+
+      case "photoRow": {
+        const v = b.variant === "portrait" ? "img-portrait"
+                : b.variant === "square"   ? "img-square" : "img-tall";
+        let imgs = "";
+        for (let i = 0; i < b.count; i++) imgs += imgPh(v);
+        return '<div class="block"><div class="photo-row">' + imgs + '</div></div>';
+      }
+
+      case "caption": {
+        const sizeClass = b.size === "lg" ? "text-lg" : "text-sm";
+        return '' +
+          '<div class="bar"><span class="bullet fade"></span>' +
+          '<span class="bar-label fade">' + b.label + '</span></div>' +
+          '<div class="block"><div class="' + sizeClass + ' fade">' + b.text + '</div></div>';
+      }
+
+      case "split":
+        return '' +
+          '<div class="bar"><span class="bullet fade"></span>' +
+          '<span class="bar-label fade">' + b.label + '</span></div>' +
+          '<div class="block"><div class="split">' +
+            '<div class="split-text">' +
+              '<div class="text-lg fade">' + b.text + '</div>' +
+              '<div class="secondary fade">' + b.secondary + '</div>' +
+            '</div>' +
+            imgPh("img-tall") +
+          '</div></div>';
+
+      case "resultsCredits":
+        return '' +
+          '<div class="two-col">' +
+            '<div class="col-results">' +
+              '<div class="bar"><span class="bullet fade"></span><span class="bar-label fade">Results</span></div>' +
+              '<div class="col-body"><div class="text-sm fade">' + b.results + '</div></div>' +
+            '</div>' +
+            '<div class="col-credits">' +
+              '<div class="bar bar-right"><span class="bar-label fade">Credits</span><span class="bullet fade"></span></div>' +
+              '<div class="col-body"><div class="text-sm fade">' + b.credits + '</div></div>' +
+            '</div>' +
+          '</div>';
+
+      default: return "";
+    }
+  }
+
+  function renderPanel(p) {
+    let inner = p.blocks.map(renderBlock).join("");
+    inner += '<div class="close-bar" data-close="1">' +
+               '<span class="close-label fade">Close</span>' +
+               '<span class="close-icon fade">&#10005;</span></div>';
+    return '<div class="panel">' + inner + '</div>';
+  }
+
+  // ---- scroll reveal ----------------------------------------------
+  // Text + imagery fade in (600ms ease-out) when they enter the
+  // viewport. Elements created later (open panels) get observed on
+  // insertion. Fallback: everything visible if IO is unavailable.
+  const io = ("IntersectionObserver" in window)
+    ? new IntersectionObserver((entries) => {
+        entries.forEach((en) => {
+          if (en.isIntersecting) {
+            en.target.classList.add("is-visible");
+            io.unobserve(en.target);
+          }
+        });
+      }, { threshold: 0, rootMargin: "0px 0px 25% 0px" })  // pre-trigger 25% BELOW the fold so a row is already fading before it's visible — never a blank, fully-in-view row
+    : null;
+
+  function observeFades(root) {
+    root.querySelectorAll(".fade:not(.is-visible)").forEach((el) => {
+      if (io) io.observe(el);
+      else el.classList.add("is-visible");
+    });
+  }
+
+  // ---- scroll orchestration ----------------------------------------
+  // Closing a tall panel above the clicked row shifts the document up,
+  // dumping the user mid-content. Fix: animate scroll so the clicked
+  // row lands at the top of the viewport, over the same duration and
+  // easing as the panel transitions. The target is recomputed every
+  // frame because it moves while the other panel collapses.
+  const MOTION = {
+    dur: parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--anim-dur")) || 600,
+    // cubic-bezier(0, 0, 0.58, 1) = CSS `ease-out`, mirrored in JS so
+    // scroll and panel height stay in lockstep
+    ease: (function (p1x, p1y, p2x, p2y) {
+      return function (x) {
+        let u = x;
+        for (let i = 0; i < 5; i++) {
+          const cx = 3 * u * (1 - u) * (1 - u) * p1x + 3 * u * u * (1 - u) * p2x + u * u * u;
+          const dx = 3 * (1 - u) * (1 - u) * p1x + 6 * u * (1 - u) * (p2x - p1x) + 3 * u * u * (1 - p2x);
+          if (!dx) break;
+          u -= (cx - x) / dx;
+        }
+        u = Math.max(0, Math.min(1, u));
+        return 3 * u * (1 - u) * (1 - u) * p1y + 3 * u * u * (1 - u) * p2y + u * u * u;
+      };
+    })(0, 0, 0.58, 1)
+  };
+
+  function scrollRowIntoPlace(row) {
+    const offset = parseFloat(getComputedStyle(document.documentElement).getPropertyValue("--pad-outer")) || 32;
+    const targetNow = () => row.getBoundingClientRect().top + window.scrollY - offset;
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      window.scrollTo(0, targetNow());
+      return;
+    }
+    const s0 = window.scrollY;
+    const t0 = performance.now();
+    (function frame(now) {
+      const t = Math.min(1, ((now || performance.now()) - t0) / MOTION.dur);
+      window.scrollTo(0, s0 + (targetNow() - s0) * MOTION.ease(t));
+      if (t < 1) requestAnimationFrame(frame);
+    })(t0);
+  }
+
+  // ---- solid-mode hue ramp -----------------------------------------
+  // First row #B24D66 = hsl(345, 40%, 50%); last row #58D1E6 =
+  // hsl(189, 74%, 62%). Hue takes the short path 345° -> 189°
+  // (descending through purple/blue, 156° of travel); S and L
+  // interpolate so the endpoints land exactly on the hex values.
+  // CMS (Phase 7 / A1-12): ramp endpoints become editable site
+  // settings (rampStart / rampEnd) — see A1-12 comment.
+  function solidColor(i, n) {
+    const t = n > 1 ? i / (n - 1) : 0;
+    const h = 345 - t * 156;
+    const s = 40 + t * (74 - 40);
+    const l = 50 + t * (62 - 50);
+    return "hsl(" + h.toFixed(1) + ", " + s.toFixed(1) + "%, " + l.toFixed(1) + "%)";
+  }
+
+  // ---- list render + accordion behaviour --------------------------
+  // Rows are built once; panels are inserted/removed inside an
+  // animating .panel-wrap (height 0 <-> content, 600ms ease-out).
+  const list = document.getElementById("work-list");
+  let openIndex = null;   // one-at-a-time
+  let openWrap = null;
+
+  // ---- ordering ----------------------------------------------------
+  // Four sort factors; their POSITION is their priority (top-left
+  // first): default Brand > Category > Project > Date. Icon shows
+  // direction: outline = descending, filled = ascending; clicking the
+  // cell toggles it. The black square is a grab handle — drag a
+  // factor onto another cell to re-slot it in the priority order.
+  // Each factor has a state: 'off' (outline icon — not sorted, not
+  // shown on the row), 'desc' (filled icon — on, descending), 'asc'
+  // (asterisk icon — on, ascending). Clicking a cell cycles
+  // off→desc→asc→off.
+  // ARRAY ORDER = priority = nav reading order (row-major) = row field
+  // order: brand > project > category > date. Default load:
+  //   TL Brand (fill/on)   TR Project (fill/on)
+  //   BL Category (fill/on) BR Date (off)
+  const factors = [
+    { key: "brand",    label: "Brand",    state: "desc" },
+    { key: "project",  label: "Project",  state: "desc" },
+    { key: "category", label: "Category", state: "desc" },
+    { key: "date",     label: "Date",     state: "off" }
+  ];
+  const STATE_CYCLE = { off: "desc", desc: "asc", asc: "off" };
+
+  const sortRows = document.getElementById("sort-rows");
+
+  function iconHTML(f, vis) {
+    if (f.state === "asc")  return '<span class="state-icon star ' + vis + '">&#10033;</span>';
+    if (f.state === "desc") return '<span class="state-icon fill ' + vis + '"></span>';
+    return '<span class="state-icon ' + vis + '"></span>';            // off = outline
+  }
+  function handleHTML(vis) {
+    return '<span class="drag-handle ' + vis + '" data-handle="1"><i></i><i></i><i></i><i></i></span>';
+  }
+
+  function renderNav(initial) {
+    sortRows.innerHTML = "";
+    const vis = initial ? "fade" : "fade is-visible";
+    for (let r = 0; r < 2; r++) {
+      const rowEl = document.createElement("div");
+      rowEl.className = "nav-row";
+      for (let c = 0; c < 2; c++) {
+        const pos = r * 2 + c;        // row-major: TL=0 TR=1 BL=2 BR=3
+        const f = factors[pos];
+        const cell = document.createElement("div");
+        cell.className = "nav-item sort-cell" + (c ? " right" : "");
+        cell.dataset.pos = pos;
+        // icon on the outer edge, 4-dot handle on the inner edge; the
+        // drag-zone overlay (inner half) carries the grab cursor
+        cell.innerHTML = (c === 0
+          ? iconHTML(f, vis) + '<span class="nav-label ' + vis + '">' + f.label + '</span>' + handleHTML(vis)
+          : handleHTML(vis) + '<span class="nav-label ' + vis + '">' + f.label + '</span>' + iconHTML(f, vis))
+          + '<span class="drag-zone"></span>';
+        rowEl.appendChild(cell);
+      }
+      sortRows.appendChild(rowEl);
+    }
+  }
+
+  // only ON factors sort, in priority (nav position) order
+  function activeFactors() { return factors.filter((f) => f.state !== "off"); }
+
+  function sortedProjects() {
+    const active = activeFactors();
+    return projects.slice().sort((a, b) => {
+      for (const f of active) {
+        const av = a[f.key], bv = b[f.key];
+        let r = (typeof av === "number" && typeof bv === "number")
+          ? av - bv
+          : String(av).localeCompare(String(bv));
+        if (f.state === "desc") r = -r;
+        if (r) return r;
+      }
+      return 0;
+    });
+  }
+
+  let view = [];   // the projects in display order
+  const rowKey = (p) => p.brand + "|" + p.project;   // stable identity across re-sorts
+
+  function renderList(animate) {
+    // FLIP step 1 — record each current row's viewport position by key
+    let firstPos = null;
+    if (animate) {
+      firstPos = new Map();
+      list.querySelectorAll(".row").forEach((r) => {
+        firstPos.set(r.dataset.key, r.getBoundingClientRect().top);
+      });
+    }
+
+    view = sortedProjects();
+    list.innerHTML = "";
+    openIndex = null;
+    openWrap = null;
+    // row shows the ON factors in priority order; the last is
+    // right-aligned (.value), the earlier ones are .label separated
+    // by dividers — so reordering/​toggling factors reshapes the row
+    const fields = activeFactors();
+    view.forEach((p, i) => {
+      const row = document.createElement("div");
+      row.className = "row";
+      row.dataset.index = i;
+      row.dataset.key = rowKey(p);
+      let html = "";
+      const lefts = fields.slice(0, -1);
+      lefts.forEach((f, idx) => {
+        html += '<span class="label fade">' + p[f.key] + '</span>';
+        if (idx < lefts.length - 1) html += '<span class="divider fade"></span>';
+      });
+      if (fields.length) {
+        const last = fields[fields.length - 1];
+        html += '<span class="value fade">' + p[last.key] + '</span>';
+      }
+      row.innerHTML = html;
+      // per-row ramp colour (display order, re-paints after re-sort);
+      // backdrop vars are set centrally by setActiveRow on highlight
+      row.style.setProperty("--row-solid", solidColor(i, view.length));
+      list.appendChild(row);
+    });
+
+    if (animate && firstPos) {
+      // FLIP steps 2–4 — invert each row to its old spot, then play
+      // them all to their new positions in one synced glide
+      const rows = list.querySelectorAll(".row");
+      rows.forEach((r) => {
+        r.querySelectorAll(".fade").forEach((f) => f.classList.add("is-visible")); // no fade, just move
+        const prev = firstPos.get(r.dataset.key);
+        if (prev != null) {
+          const dy = prev - r.getBoundingClientRect().top;
+          if (dy) { r.style.transition = "none"; r.style.transform = "translateY(" + dy + "px)"; }
+        }
+      });
+      requestAnimationFrame(() => {
+        rows.forEach((r) => {
+          r.style.transition = "transform var(--flip-dur) var(--anim-ease)";
+          r.style.transform = "";
+        });
+      });
+    } else {
+      observeFades(list);
+    }
+  }
+
+  function applySort(animate) {
+    if (openWrap) closePanel(true);   // a re-sort closes any open project
+    renderNav(false);
+    renderList(animate);
+    updateActiveRow();
+  }
+
+  // Each sort cell is split 50/50: the half with the state icon is the
+  // TOGGLE zone (click cycles off→desc→asc→off); the half with the dots
+  // is the DRAG zone (grab to reorder priority). The dots sit on the
+  // inner edge, so the drag half is the inner half — left half for a
+  // .right cell, right half for a left cell.
+  function inDragHalf(cell, clientX) {
+    const rect = cell.getBoundingClientRect();
+    const past = (clientX - rect.left) > rect.width / 2;   // pointer in right half?
+    return cell.classList.contains("right") ? !past : past;
+  }
+
+  let suppressClick = false;
+  sortRows.addEventListener("click", (e) => {
+    if (suppressClick) { suppressClick = false; return; }
+    const cell = e.target.closest(".sort-cell");
+    if (!cell || inDragHalf(cell, e.clientX)) return;   // drag half doesn't toggle
+    const f = factors[+cell.dataset.pos];
+    f.state = STATE_CYCLE[f.state];
+    applySort(false);   // direction / on-off toggle: snap
+  });
+
+  // Drag: grab in the drag half, move past a small threshold to lift.
+  // On lift the cell becomes an inverted ghost (black/white) and the
+  // slot it leaves fills with a dot field; the ghost flies into its
+  // destination (or home) on release.
+  let drag = null, pending = null;
+  const reducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  sortRows.addEventListener("pointerdown", (e) => {
+    const cell = e.target.closest(".sort-cell");
+    if (!cell || !inDragHalf(cell, e.clientX)) return;   // only the drag half grabs
+    pending = { cell, sx: e.clientX, sy: e.clientY };
+    e.preventDefault();                                  // no text selection
+  });
+
+  function startDrag(cell, e) {
+    const rect = cell.getBoundingClientRect();
+    const outer = document.createElement("div");
+    outer.className = "drag-ghost";
+    outer.style.left = rect.left + "px";
+    outer.style.top = rect.top + "px";
+    outer.style.width = rect.width + "px";
+    outer.style.height = rect.height + "px";
+    const inner = cell.cloneNode(true);
+    inner.classList.remove("vacated", "drop-target");
+    inner.classList.add("inverted");                 // lifted = inverted
+    outer.appendChild(inner);
+    document.body.appendChild(outer);
+
+    drag = {
+      from: +cell.dataset.pos, over: null,
+      outer, inner, origin: rect,
+      dx: e.clientX - rect.left, dy: e.clientY - rect.top
+    };
+    cell.classList.add("vacated");                   // origin slot -> dot field
+  }
+
+  window.addEventListener("pointermove", (e) => {
+    if (pending && !drag) {
+      if (Math.hypot(e.clientX - pending.sx, e.clientY - pending.sy) < 4) return; // threshold
+      startDrag(pending.cell, e);
+      pending = null;
+    }
+    if (!drag) return;
+    drag.outer.style.left = (e.clientX - drag.dx) + "px";
+    drag.outer.style.top = (e.clientY - drag.dy) + "px";
+    const el = document.elementFromPoint(e.clientX, e.clientY);
+    const cell = el && el.closest(".sort-cell");
+    sortRows.querySelectorAll(".drop-target").forEach((c) => c.classList.remove("drop-target"));
+    drag.over = null;
+    if (cell && +cell.dataset.pos !== drag.from) {
+      cell.classList.add("drop-target");
+      drag.over = +cell.dataset.pos;
+    }
+  });
+
+  window.addEventListener("pointerup", () => {
+    pending = null;
+    if (!drag) return;
+    const { from, over, outer, inner, origin } = drag;
+    drag = null;
+    suppressClick = true;
+
+    const commit = (over !== null && over !== from);
+    const finish = () => {
+      outer.remove();
+      if (commit) {
+        const moved = factors.splice(from, 1)[0];
+        factors.splice(over, 0, moved);
+        applySort(true);    // factor reorder: rows glide to new positions (FLIP)
+      } else {
+        renderNav(false);   // clear drag styling
+      }
+    };
+
+    if (reducedMotion()) { finish(); return; }
+
+    // fly to the destination slot (or back home), then drop in.
+    // Query by data-pos: DOM order is column-major, not priority order.
+    const destCell = sortRows.querySelector('.sort-cell[data-pos="' + over + '"]');
+    const dest = commit ? destCell.getBoundingClientRect() : origin;
+    outer.classList.add("flying");
+    outer.style.left = dest.left + "px";
+    outer.style.top = dest.top + "px";
+    let done = false;
+    const onEnd = () => { if (!done) { done = true; finish(); } };
+    outer.addEventListener("transitionend", onEnd, { once: true });
+    setTimeout(onEnd, 300);                                        // safety net
+  });
+
+  renderNav(true);
+  renderList(false);
+
+  function openPanel(i) {
+    const row = list.querySelector('.row[data-index="' + i + '"]');
+    const wrap = document.createElement("div");
+    wrap.className = "panel-wrap";
+    wrap.innerHTML = renderPanel(view[i]);
+    row.after(wrap);
+    row.classList.add("is-open");
+    observeFades(wrap);
+
+    wrap.getBoundingClientRect();              // commit height:0
+    wrap.style.height = wrap.scrollHeight + "px";
+    wrap.addEventListener("transitionend", function onEnd(e) {
+      if (e.propertyName !== "height") return;
+      wrap.style.height = "auto";              // free for responsive reflow
+      wrap.removeEventListener("transitionend", onEnd);
+    });
+
+    openIndex = i;
+    openWrap = wrap;
+  }
+
+  function closePanel(instant, anchorBottom) {
+    const wrap = openWrap, i = openIndex;
+    const row = list.querySelector('.row[data-index="' + i + '"]');
+    openIndex = null;
+    openWrap = null;
+
+    // instant path: used for reduced motion — no collapse, just remove
+    if (instant || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      row.classList.remove("is-open");
+      wrap.remove();
+      return;
+    }
+
+    // close: faster than open. The white cells stay opaque (container
+    // stays white); only the content (.fade) fades out, ease-in.
+    // anchorBottom (downward switch) keeps content pinned to the bottom
+    // edge as it collapses.
+    if (anchorBottom) wrap.classList.add("anchor-bottom");
+    wrap.classList.add("closing");
+    wrap.style.transition = "height var(--panel-close-dur) var(--anim-ease)";
+    wrap.style.height = wrap.offsetHeight + "px";  // pin current height (handles mid-animation close)
+    wrap.getBoundingClientRect();                  // commit
+    wrap.style.height = "0px";
+    wrap.addEventListener("transitionend", function onEnd(e) {
+      if (e.propertyName !== "height") return;
+      row.classList.remove("is-open");           // border returns at the end
+      wrap.remove();
+    });
+  }
+
+  list.addEventListener("click", (e) => {
+    // In-place model: the clicked row stays put; the panel just
+    // expands/collapses below it. No scroll orchestration on open or
+    // close — only the switch still compensates so the row doesn't jump.
+    if (e.target.closest(".close-bar")) { closePanel(); return; }
+
+    const row = e.target.closest(".row");
+    if (!row) return;
+    const i = parseInt(row.dataset.index, 10);
+    if (!view[i].blocks) return;              // closed-only rows do nothing
+
+    if (openIndex === i) { closePanel(); return; }   // toggle
+
+    if (openWrap) {
+      // switching: animate the OLD panel closed and the NEW one open at
+      // the same time, while pinning the clicked row's viewport position
+      // so it doesn't drift as the old panel collapses above it.
+      // Downward switch (old row above new): bottom-anchor the closing
+      // panel so its content doesn't slide down as it collapses.
+      const downward = openIndex < i;
+      const ref = row.getBoundingClientRect().top;
+      closePanel(false, downward);   // animated close of the old
+      openPanel(i);                  // animated open of the new
+      if (!reducedMotion()) {
+        const dur = parseFloat(getComputedStyle(document.documentElement)
+          .getPropertyValue("--panel-dur")) || 1200;
+        const t0 = performance.now();
+        (function pin(now) {
+          const dy = row.getBoundingClientRect().top - ref;
+          if (dy) window.scrollBy(0, dy);
+          if ((now || performance.now()) - t0 < dur + 60) requestAnimationFrame(pin);
+        })(t0);
+      }
+      return;
+    }
+    openPanel(i);
+  });
+
+  // ---- mobile: scroll-position activation --------------------------
+  // Hover has no touch equivalent. Mobile (≤640px) uses an active
+  // line at a fixed viewport position: after 100px of scroll, whichever
+  // row sits on that line carries the hover treatment (backdrop
+  // included) as the list scrolls under it.
+  const SCROLL_ARM = 100;                       // px of scroll before activation
+  const ACTIVE_LINE_FRAC = 0.27;                // active line height — a little above 1/3 down
+  const mobileMQ = window.matchMedia("(max-width: 640px)");
+  let activeRow = null;
+
+  // ---- backdrop lifecycle -------------------------------------------
+  // .backdrop-on shows the current backdrop (gradient / image / solid).
+  // Image mode crossfades between two fixed layers when the source
+  // project changes.
+  const bgLayers = document.querySelectorAll(".bg-img");
+  let bgFront = null;
+
+  function setBackdropImage(src) {
+    if (bgFront && bgFront.dataset.src === src) return;
+    const next = (bgFront === bgLayers[0]) ? bgLayers[1] : bgLayers[0];
+    next.style.backgroundImage = 'url("' + src + '")';
+    next.dataset.src = src;
+    next.classList.add("front");
+    if (bgFront) bgFront.classList.remove("front");   // old image fades out under the new
+    bgFront = next;
+  }
+
+  function setBackdropFromRow(row) {
+    const p = view[parseInt(row.dataset.index, 10)];
+    document.body.style.setProperty("--hover-solid", row.style.getPropertyValue("--row-solid"));
+    setBackdropImage(p.image || PLACEHOLDER_IMG);
+    document.body.classList.add("backdrop-on");
+  }
+
+  function clearBackdrop() {
+    document.body.classList.remove("backdrop-on");
+  }
+
+  function setActiveRow(row) {
+    if (row === activeRow) return;
+    if (activeRow) activeRow.classList.remove("is-active");
+    activeRow = row;
+    if (row) {
+      row.classList.add("is-active");
+      setBackdropFromRow(row);
+    }
+    // row === null: backdrop is decided by the caller — desktop holds
+    // it while a project is open (see updateDesktopBackdrop), mobile
+    // clears it
+  }
+
+  // open-state persistence: with a project open, the backdrop stays
+  // (the open row's values) while the cursor remains within the
+  // list's vertical bounds; it clears when the cursor exits above
+  // the first row or below the last element (incl. an open panel)
+  function updateDesktopBackdrop() {
+    if (activeRow) return;                       // a hover is driving it
+    const openRow = list.querySelector(".row.is-open");
+    if (openRow && pointerY >= 0) {
+      const firstRow = list.querySelector(".row");
+      const top = firstRow.getBoundingClientRect().top;
+      const bottom = list.lastElementChild.getBoundingClientRect().bottom;
+      if (pointerY >= top && pointerY <= bottom) {
+        setBackdropFromRow(openRow);             // hold the open project's backdrop
+        return;
+      }
+    }
+    clearBackdrop();
+  }
+
+  function updateActiveRow() {
+    if (!mobileMQ.matches) return;            // desktop is pointer-driven
+    if (window.scrollY < SCROLL_ARM) { setActiveRow(null); clearBackdrop(); return; }
+    const lineY = window.innerHeight * ACTIVE_LINE_FRAC;   // active line, fixed in viewport
+    const rows = list.querySelectorAll(".row");
+    let hit = null;
+    for (const r of rows) {
+      const rect = r.getBoundingClientRect();
+      if (rect.top <= lineY && rect.bottom > lineY) { hit = r; break; }
+    }
+    setActiveRow(hit);
+    if (!hit) clearBackdrop();
+  }
+
+  // ---- desktop: pointer-driven hover --------------------------------
+  // CSS :hover is only re-evaluated on mouse movement, so when the
+  // list scrolls under a stationary cursor the highlight lags until
+  // scroll ends. Instead the highlight is set from JS: on pointer
+  // moves directly, and on every scroll frame by hit-testing the
+  // last known cursor position.
+  let pointerX = -1, pointerY = -1;
+
+  function hitTestHover() {
+    if (pointerX < 0) return;
+    const el = document.elementFromPoint(pointerX, pointerY);
+    setActiveRow(el ? el.closest(".s-work .row") : null);
+    updateDesktopBackdrop();
+  }
+
+  window.addEventListener("pointermove", (e) => {
+    if (e.pointerType !== "mouse" || mobileMQ.matches) return;
+    pointerX = e.clientX; pointerY = e.clientY;
+    hitTestHover();
+  }, { passive: true });
+  document.documentElement.addEventListener("mouseleave", () => {
+    pointerX = pointerY = -1;
+    if (!mobileMQ.matches) { setActiveRow(null); clearBackdrop(); }
+  });
+
+  let scrollTick = false;
+  window.addEventListener("scroll", () => {
+    if (scrollTick) return;
+    scrollTick = true;
+    requestAnimationFrame(() => {
+      scrollTick = false;
+      if (mobileMQ.matches) updateActiveRow();
+      else hitTestHover();                    // re-aim under the static cursor
+    });
+  }, { passive: true });
+  window.addEventListener("resize", () => { updateActiveRow(); });
+  updateActiveRow();
+
+  // dark mode: Mode toggles it; only the hover/active row fill
+  // changes (white -> black) and the Mode icon fills
+  document.getElementById("mode-toggle").addEventListener("click", () => {
+    document.body.classList.toggle("dark");
+  });
+
+  // Image cycles three states (independent of Mode):
+  //   off (outline icon)  -> gradient backdrop on hover
+  //   image (filled icon) -> per-project photo backdrop, Red text (41:7573)
+  //   solid (dot icon)    -> flat TXT-2 backdrop (41:2107)
+  document.getElementById("image-toggle").addEventListener("click", () => {
+    const b = document.body.classList;
+    if (b.contains("image"))      { b.remove("image"); b.add("solid"); }
+    else if (b.contains("solid")) { b.remove("solid"); }
+    else                          { b.add("image"); }
+  });
+
+  observeFades(document);
+</script>
+</body>
+</html>

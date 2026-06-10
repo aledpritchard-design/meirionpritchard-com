@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meirion Pritchard — Work · Design tokens</title>
+<style>
+  :root{
+    --ink:#000; --paper:#fff;
+    --hover-ink:#b24d66; --hover-red:#eb5757; --dot-grey:#ebebeb;
+    --ramp-start:#b24d66; --ramp-end:#58d1e6;
+    --hover-fill:rgba(255,255,255,.9); --hover-fill-dark:rgba(0,0,0,.9);
+    --panel-dur:1200ms; --panel-close-dur:600ms; --anim-dur:600ms;
+    --flip-dur:600ms; --fade-dur:900ms; --anim-ease:ease-out;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:var(--paper);color:var(--ink);
+    font-family:"Helvetica Neue",Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;padding:32px;line-height:1.2}
+  h1{font-size:55px;font-weight:400;letter-spacing:.25px;margin-bottom:4px}
+  .sub{font-size:14px;color:#666;margin-bottom:40px}
+  section{border:2px solid var(--ink);margin-bottom:-2px}
+  h2{font-size:18px;font-weight:700;letter-spacing:.25px;
+    padding:14px 18px;border-bottom:2px solid var(--ink)}
+  .pad{padding:18px}
+  .note{font-size:12px;color:#666;padding:0 18px 18px}
+
+  /* colour swatches */
+  .swatches{display:flex;flex-wrap:wrap;gap:0}
+  .swatch{width:180px;border:2px solid var(--ink);margin:-2px 0 0 -2px}
+  .chip{height:88px}
+  .swatch .meta{padding:8px 10px;border-top:2px solid var(--ink);font-size:12px}
+  .swatch .name{font-weight:700}
+  .swatch .val{color:#666;font-family:ui-monospace,Menlo,monospace}
+  .checker{background:
+    linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%),
+    linear-gradient(45deg,#ccc 25%,transparent 25%,transparent 75%,#ccc 75%),#fff;
+    background-size:16px 16px;background-position:0 0,8px 8px}
+
+  /* hue ramp */
+  .ramp{height:64px;border:2px solid var(--ink);
+    background:linear-gradient(90deg,
+      #b24d66,#a85a86,#9469a6,#7a7ec4,#62a0d8,#58d1e6)}
+  .ramp-ends{display:flex;justify-content:space-between;font-size:12px;
+    font-family:ui-monospace,Menlo,monospace;color:#666;margin-top:6px}
+
+  /* type scale */
+  .type-row{display:flex;align-items:baseline;gap:20px;
+    border-bottom:1px solid #eee;padding:10px 0}
+  .type-row:last-child{border-bottom:none}
+  .type-label{width:170px;flex-shrink:0;font-size:12px;
+    font-family:ui-monospace,Menlo,monospace;color:#666}
+  .type-sample{letter-spacing:.25px;white-space:nowrap;overflow:hidden}
+
+  /* spacing bars */
+  .space-row{display:flex;align-items:center;gap:14px;padding:7px 0}
+  .space-label{width:150px;flex-shrink:0;font-size:12px;
+    font-family:ui-monospace,Menlo,monospace;color:#666}
+  .space-bar{height:18px;background:var(--ink)}
+  .space-val{font-size:12px;color:#666}
+
+  /* motion */
+  .motion-row{display:flex;align-items:center;gap:16px;padding:8px 0;
+    border-bottom:1px solid #eee}
+  .motion-row:last-child{border-bottom:none}
+  .motion-token{width:170px;flex-shrink:0;font-size:12px;
+    font-family:ui-monospace,Menlo,monospace}
+  .motion-val{width:80px;flex-shrink:0;font-weight:700}
+  .motion-desc{font-size:13px;color:#666;flex:1}
+  .demo{border:2px solid var(--ink);height:14px;width:0;background:var(--hover-ink)}
+  .demo.go{width:160px}
+
+  .const{font-size:13px;line-height:1.9}
+  .const b{font-weight:700}
+  code{font-family:ui-monospace,Menlo,monospace;font-size:12px;
+    background:#f4f4f4;padding:1px 5px;border-radius:3px}
+  .play{font-size:12px;border:2px solid var(--ink);background:var(--paper);
+    padding:6px 12px;cursor:pointer;font-weight:700;margin:0 18px 18px}
+</style>
+</head>
+<body>
+  <h1>Work — Design tokens</h1>
+  <div class="sub">Extracted from the prototype (mdp-work-prototype.html). Canon — log.meirion-decisions D007–D022. Build source for A1-10.</div>
+
+  <!-- COLOUR -->
+  <section>
+    <h2>Colour</h2>
+    <div class="pad">
+      <div class="swatches">
+        <div class="swatch"><div class="chip" style="background:#000"></div><div class="meta"><div class="name">--ink</div><div class="val">#000000</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#fff;box-shadow:inset 0 0 0 1px #000"></div><div class="meta"><div class="name">--paper</div><div class="val">#ffffff</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#b24d66"></div><div class="meta"><div class="name">--hover-ink</div><div class="val">#b24d66 · TXT-2</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#eb5757"></div><div class="meta"><div class="name">--hover-red</div><div class="val">#eb5757 · image mode</div></div></div>
+        <div class="swatch"><div class="chip" style="background:#ebebeb"></div><div class="meta"><div class="name">--dot-grey</div><div class="val">#ebebeb · dot field</div></div></div>
+        <div class="swatch"><div class="chip checker"><div style="height:100%;background:var(--hover-fill)"></div></div><div class="meta"><div class="name">--hover-fill</div><div class="val">white 90% · row</div></div></div>
+        <div class="swatch"><div class="chip checker"><div style="height:100%;background:var(--hover-fill-dark)"></div></div><div class="meta"><div class="name">--hover-fill-dark</div><div class="val">black 90% · dark</div></div></div>
+      </div>
+    </div>
+    <div class="note">Hover/active/open row fill is 90% opaque so the backdrop bleeds through (D022). Checker shows transparency.</div>
+  </section>
+
+  <!-- HUE RAMP -->
+  <section>
+    <h2>Solid-mode hue ramp</h2>
+    <div class="pad">
+      <div class="ramp"></div>
+      <div class="ramp-ends"><span>--ramp-start #b24d66 (row 1)</span><span>--ramp-end #58d1e6 (last row)</span></div>
+    </div>
+    <div class="note">Per-row colour interpolates across list order on the short HSL path 345° → 189° (D015 / D021). Editable in the CMS at Phase 7.</div>
+  </section>
+
+  <!-- TYPE -->
+  <section>
+    <h2>Type — Helvetica Neue, letter-spacing 0.25px</h2>
+    <div class="pad">
+      <div class="type-row"><div class="type-label">--fs-hero · 75 / – / 55</div><div class="type-sample" style="font-size:75px;font-weight:400">Work</div></div>
+      <div class="type-row"><div class="type-label">--fs-row · 75 / 45 / 18<br>weight 400 / 500 / 700</div><div class="type-sample" style="font-size:75px;font-weight:400">Wallpaper* | Awards</div></div>
+      <div class="type-row"><div class="type-label">--fs-block-lg · 75 / 45 / 20</div><div class="type-sample" style="font-size:48px;font-weight:400">Large body / quote</div></div>
+      <div class="type-row"><div class="type-label">--fs-nav · 25 / – / 18</div><div class="type-sample" style="font-size:25px;font-weight:700">Brand · Project</div></div>
+      <div class="type-row"><div class="type-label">--fs-block-sm · 25 / – / 16</div><div class="type-sample" style="font-size:25px;font-weight:500">Small body, results, credits, bars</div></div>
+    </div>
+    <div class="note">Three sizes per token: desktop / tablet (≤1024) / mobile (≤640). Row weight steps Regular → Medium → Bold across breakpoints.</div>
+  </section>
+
+  <!-- SPACING -->
+  <section>
+    <h2>Spacing &amp; layout</h2>
+    <div class="pad">
+      <div class="space-row"><div class="space-label">--pad-outer</div><div class="space-bar" style="width:32px"></div><div class="space-val">32 → 16 (mobile)</div></div>
+      <div class="space-row"><div class="space-label">--row-gap</div><div class="space-bar" style="width:25px"></div><div class="space-val">25 → 12</div></div>
+      <div class="space-row"><div class="space-label">--block-pad</div><div class="space-bar" style="width:20px"></div><div class="space-val">20 → 12</div></div>
+      <div class="space-row"><div class="space-label">--block-pad-x</div><div class="space-bar" style="width:18px"></div><div class="space-val">18 → 12</div></div>
+      <div class="space-row"><div class="space-label">--row-pad-x</div><div class="space-bar" style="width:15px"></div><div class="space-val">15</div></div>
+      <div class="space-row"><div class="space-label">--row-pad-y</div><div class="space-bar" style="width:10px"></div><div class="space-val">10 → 6</div></div>
+      <div class="space-row"><div class="space-label">--divider-h</div><div class="space-bar" style="width:80px;height:8px"></div><div class="space-val">80 → 60 → 30 (row divider height)</div></div>
+    </div>
+    <div class="note">Border: 2px solid --ink on every cell; adjacent borders collapse to one line via −2px margins (D009).</div>
+  </section>
+
+  <!-- MOTION -->
+  <section>
+    <h2>Motion — ease-out throughout</h2>
+    <div class="pad">
+      <div class="motion-row"><div class="motion-token">--panel-dur</div><div class="motion-val">1200ms</div><div class="motion-desc">accordion open</div><div class="demo" data-dur="1200"></div></div>
+      <div class="motion-row"><div class="motion-token">--panel-close-dur</div><div class="motion-val">600ms</div><div class="motion-desc">accordion close</div><div class="demo" data-dur="600"></div></div>
+      <div class="motion-row"><div class="motion-token">--anim-dur</div><div class="motion-val">600ms</div><div class="motion-desc">hover backdrop fades</div><div class="demo" data-dur="600"></div></div>
+      <div class="motion-row"><div class="motion-token">--flip-dur</div><div class="motion-val">600ms</div><div class="motion-desc">row reorder (FLIP)</div><div class="demo" data-dur="600"></div></div>
+      <div class="motion-row"><div class="motion-token">--fade-dur</div><div class="motion-val">900ms</div><div class="motion-desc">scroll fade-in</div><div class="demo" data-dur="900"></div></div>
+    </div>
+    <button class="play" onclick="playDemos()">▶ Play timings</button>
+  </section>
+
+  <!-- CONSTANTS -->
+  <section>
+    <h2>Non-variable constants</h2>
+    <div class="pad const">
+      <div><b>Sort state icon</b> — 16px circle, 2px border. outline = off, fill = descending, asterisk = ascending (D021)</div>
+      <div><b>Drag handle</b> — 18px box, four 2px dots at the corners</div>
+      <div><b>Drag lift</b> — dragged cell inverts (ink fill / paper text + dots); vacated slot fills with the <code>--dot-grey</code> dot field</div>
+      <div><b>Mobile active line</b> — 27% of viewport height; arms after 100px scroll; 75vh bottom spacer until the footer exists (D016 / D022)</div>
+      <div><b>Scroll fade</b> — pre-triggers 25% below the fold (D022)</div>
+      <div><b>Image aspect ratios</b> — frame <code>1764/972.5</code> · portrait <code>576/972.5</code> · square <code>875/972.5</code> · tall <code>869/972.5</code></div>
+    </div>
+  </section>
+
+<script>
+  function playDemos(){
+    document.querySelectorAll('.demo').forEach(d=>{
+      d.classList.remove('go'); d.style.transition='none';
+      void d.offsetWidth;
+      d.style.transition='width '+d.dataset.dur+'ms ease-out';
+      requestAnimationFrame(()=>d.classList.add('go'));
+    });
+  }
+  playDemos();
+</script>
+</body>
+</html>
