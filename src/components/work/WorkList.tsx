@@ -2,27 +2,29 @@
 
 import { useRef, useState, useCallback, useEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
-import type { WorkProject } from "./types";
+import type { HslColor, WorkProject } from "./types";
 import { WorkRow } from "./WorkRow";
 import { WorkPanel } from "./WorkPanel";
 import { useWorkMode } from "./WorkModeContext";
 
 type Props = {
   projects: WorkProject[];
+  rampStart: HslColor;
+  rampEnd: HslColor;
 };
 
 const SCROLL_ARM = 100;
 const ACTIVE_LINE_FRAC = 0.27;
 
-function solidColor(i: number, n: number): string {
+function solidColor(i: number, n: number, start: HslColor, end: HslColor): string {
   const t = n > 1 ? i / (n - 1) : 0;
-  const h = 345 - t * 156;
-  const s = 40 + t * (74 - 40);
-  const l = 50 + t * (62 - 50);
+  const h = start.h + t * (end.h - start.h);
+  const s = start.s + t * (end.s - start.s);
+  const l = start.l + t * (end.l - start.l);
   return `hsl(${h.toFixed(1)}, ${s.toFixed(1)}%, ${l.toFixed(1)}%)`;
 }
 
-export function WorkList({ projects }: Props) {
+export function WorkList({ projects, rampStart, rampEnd }: Props) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const prefersReduced = useReducedMotion();
   const { isDark, imageMode } = useWorkMode();
@@ -300,7 +302,7 @@ export function WorkList({ projects }: Props) {
               }}
               project={project}
               isOpen={openIndex === i}
-              rowSolid={solidColor(i, projects.length)}
+              rowSolid={solidColor(i, projects.length, rampStart, rampEnd)}
               onClick={() => handleRowClick(i)}
             />
             <AnimatePresence mode="sync">

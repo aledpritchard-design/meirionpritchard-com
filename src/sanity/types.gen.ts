@@ -144,8 +144,25 @@ export type Slug = {
   source?: string;
 };
 
+export type HslColorObject = {
+  h?: number;
+  s?: number;
+  l?: number;
+};
+
+export type SiteSettings = {
+  _id: string;
+  _type: "siteSettings";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  rampStart?: HslColorObject;
+  rampEnd?: HslColorObject;
+};
+
 export type AllSanitySchemaTypes =
   | WorkProject
+  | SiteSettings
   | SanityImagePaletteSwatch
   | SanityImagePalette
   | SanityImageDimensions
@@ -167,10 +184,18 @@ export type WORK_PROJECTS_QUERY_RESULT = Array<{
   project: string | null;
 }>;
 
+// Variable: SITE_SETTINGS_QUERY
+// Query: *[_type == "siteSettings"][0] { rampStart { h, s, l }, rampEnd { h, s, l } }
+export type SITE_SETTINGS_QUERY_RESULT = {
+  rampStart: { h: number | null; s: number | null; l: number | null } | null;
+  rampEnd: { h: number | null; s: number | null; l: number | null } | null;
+} | null;
+
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
     '\n  *[_type == "workProject"] | order(brand asc) { _id, brand, project }\n': WORK_PROJECTS_QUERY_RESULT;
+    '\n  *[_type == "siteSettings"][0] {\n    rampStart { h, s, l },\n    rampEnd { h, s, l }\n  }\n': SITE_SETTINGS_QUERY_RESULT;
   }
 }

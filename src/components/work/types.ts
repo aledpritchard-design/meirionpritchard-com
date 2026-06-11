@@ -1,3 +1,5 @@
+export type HslColor = { h: number; s: number; l: number };
+
 export type PhotoBlock = {
   type: "photo";
   variant: "frame";
