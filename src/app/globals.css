@@ -6,55 +6,80 @@
 }
 
 /* =====================================================
-   Design tokens — sourced from
-   /reference/mdp-work-prototype.html (D007)
+   Design tokens — sourced from /reference/tokens.css,
+   the clean token sheet extracted from the prototype.
+   Values are canon — see log.meirion-decisions D007–D022.
    ===================================================== */
 :root {
-  /* Colour */
-  --ink: #000000;
-  --paper: #ffffff;
-  --border: 2px solid #000000;
+  /* ---- Colour ---- */
+  --ink: #000000;        /* lines, type, dark fill */
+  --paper: #ffffff;      /* base background, row fill */
+  --hover-ink: #b24d66;  /* MM TXT-2 — hover/active text + divider (colour & solid modes) */
+  --hover-red: #eb5757;  /* Red — hover text in image mode */
+  --dot-grey: #ebebeb;   /* dot field in a vacated sort slot */
 
-  /* Spacing */
-  --pad-outer: 32px;
+  /* hovered / active / open row fill — 90% so the backdrop bleeds through (D022) */
+  --hover-fill: rgba(255, 255, 255, 0.9);   /* light */
+  --hover-fill-dark: rgba(0, 0, 0, 0.9);    /* dark mode */
+
+  /* solid-mode hue-ramp endpoints (D015 / D021); per-row colours
+     interpolate across list order on the short HSL path 345° → 189° */
+  --ramp-start: #b24d66;
+  --ramp-end: #58d1e6;
+
+  /* ---- Border ---- */
+  --border: 2px solid var(--ink);   /* every cell; adjacent borders collapse via -2px margins (D009) */
+
+  /* ---- Spacing & layout ---- */
+  --pad-outer: 32px;     /* section outer padding */
   --nav-pad: 32px;
   --row-pad-x: 15px;
   --row-pad-y: 10px;
   --row-gap: 25px;
-  --divider-h: 80px;
+  --divider-h: 80px;     /* vertical divider in a row */
+  --block-pad: 20px;     /* open-panel block padding */
+  --block-pad-x: 18px;
 
-  /* Typography */
+  /* ---- Type ---- */
+  /* family: "Helvetica Neue", Helvetica, Arial, sans-serif; letter-spacing: 0.25px */
   --fs-hero: 75px;
   --fs-nav: 25px;
-  --fs-row: 75px;
-  --row-weight: 400;
+  --fs-row: 75px;        /* project rows */
+  --row-weight: 400;     /* Regular */
+  --fs-block-lg: 75px;   /* open-panel large body */
+  --fs-block-sm: 25px;   /* open-panel small body / bars / results / credits */
 
-  /* Panel type */
-  --fs-block-lg: 75px;
-  --fs-block-sm: 25px;
-  --block-pad: 20px;
-  --block-pad-x: 18px;
+  /* ---- Motion (D010 / D019 / D020 / D022) ---- */
+  --anim-dur: 600ms;         /* hover backdrop fades */
+  --panel-dur: 1200ms;       /* accordion OPEN */
+  --panel-close-dur: 600ms;  /* accordion CLOSE (faster) */
+  --flip-dur: 600ms;         /* row reorder (FLIP) */
+  --fade-dur: 900ms;         /* scroll fade-in */
+  --anim-ease: ease-out;
 }
 
+/* ---- Tablet ≤1024px ---- */
 @media (max-width: 1024px) {
   :root {
     --fs-row: 45px;
-    --row-weight: 500;
+    --row-weight: 500;   /* Medium */
     --divider-h: 60px;
     --fs-block-lg: 45px;
   }
 }
 
+/* ---- Mobile ≤640px ---- */
 @media (max-width: 640px) {
   :root {
     --pad-outer: 16px;
+    --row-pad-x: 15px;
     --row-pad-y: 6px;
     --row-gap: 12px;
     --divider-h: 30px;
     --fs-hero: 55px;
     --fs-nav: 18px;
     --fs-row: 18px;
-    --row-weight: 700;
+    --row-weight: 700;   /* Bold */
     --fs-block-lg: 20px;
     --fs-block-sm: 16px;
     --block-pad: 12px;
@@ -152,19 +177,82 @@ a {
 .nav-item + .nav-item {
   margin-left: -2px;
 }
+.nav-item span {
+  font-size: var(--fs-nav);
+  font-weight: 700;
+  letter-spacing: 0.25px;
+}
+.bullet {
+  position: relative;
+}
 .nav-item .bullet {
   width: 16px;
   height: 16px;
   border: 2px solid var(--ink);
   border-radius: 50%;
   flex-shrink: 0;
-  display: block;
 }
+/* Mode / Image are separate click targets inside one nav cell */
+.nav-item .toggle {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  flex: 1 0 0;
+  min-width: 0;
+  cursor: pointer;
+}
+/* labels fill the cell so end glyphs sit at the edges */
 .nav-item .nav-label {
-  font-size: var(--fs-nav);
-  font-weight: 700;
-  letter-spacing: 0.25px;
+  flex: 1 0 0;
+  min-width: 0;
 }
+
+/* Sort factor cells (static structure; interactive behaviour wired by A1-22) */
+.sort-cell {
+  cursor: pointer;
+  position: relative;
+}
+.drag-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 50%;
+  pointer-events: none;
+}
+.sort-cell:not(.right) .drag-zone { right: 0; }
+.sort-cell.right .drag-zone { left: 0; }
+
+/* State icon: outline = off, filled circle = desc (Figma 41:6201) */
+.state-icon {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  box-sizing: border-box;
+  border: 2px solid var(--ink);
+  border-radius: 50%;
+}
+.state-icon.fill {
+  background: var(--ink);
+}
+
+/* 4-corner drag handle (Figma 50:7622): 2px dots at each corner of an 18px box */
+.drag-handle {
+  position: relative;
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+}
+.drag-handle i {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: var(--ink);
+}
+.drag-handle i:nth-child(1) { top: 0; left: 0; }
+.drag-handle i:nth-child(2) { top: 0; right: 0; }
+.drag-handle i:nth-child(3) { bottom: 0; left: 0; }
+.drag-handle i:nth-child(4) { bottom: 0; right: 0; }
 
 /* Work section */
 .s-work {
