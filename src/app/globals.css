@@ -90,10 +90,13 @@
 /* =====================================================
    Base
    ===================================================== */
-html,
+html {
+  height: 100%;
+  background: var(--paper);  /* fallback base; body must stay transparent so body::before shows */
+}
+
 body {
   height: 100%;
-  background: var(--paper);
   color: var(--ink);
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
@@ -101,6 +104,45 @@ body {
 
 a {
   color: inherit;
+}
+
+/* ---- Gradient backdrop (hover, colour mode) ---- */
+/* CSS approximation of Figma "Asset: Fullscreen" (41:6085).
+   z-index -1 keeps it behind all content; body must have no
+   background or it would paint over this layer. */
+body::before {
+  content: "";
+  position: fixed; inset: 0; z-index: -1;
+  background:
+    radial-gradient(60% 70% at 12% 8%,  #e05848 0%, transparent 62%),
+    radial-gradient(50% 60% at 86% 12%, #b9b3e6 0%, transparent 60%),
+    radial-gradient(45% 55% at 96% 72%, #a9c6e8 0%, transparent 60%),
+    radial-gradient(55% 50% at 48% 96%, #f3e3c3 0%, transparent 65%),
+    radial-gradient(40% 60% at 4% 58%,  #c44b62 0%, transparent 60%),
+    radial-gradient(50% 50% at 42% 45%, #e08a9b 0%, transparent 70%),
+    #eb5757;
+  opacity: 0;
+  transition: opacity var(--anim-dur) var(--anim-ease);
+  pointer-events: none;
+}
+/* backdrop-on shows the gradient; image mode swaps it for bg-img layers */
+body:not(.image).backdrop-on::before { opacity: 1; }
+/* solid mode: flat per-row hue-ramp colour instead of the gradient */
+body.solid::before { background: var(--hover-solid, var(--hover-ink)); }
+
+/* ---- Image-mode backdrop layers (crossfade pair) ---- */
+.bg-img {
+  position: fixed; inset: 0; z-index: -1;
+  background: center / cover no-repeat;
+  opacity: 0;
+  transition: opacity var(--anim-dur) var(--anim-ease);
+  pointer-events: none;
+}
+body.image.backdrop-on .bg-img.front { opacity: 1; }
+
+@media (prefers-reduced-motion: reduce) {
+  body::before { transition: none; }
+  .bg-img { transition: none; }
 }
 
 /* =====================================================
@@ -292,6 +334,35 @@ a {
 }
 .row.is-open { border-bottom: none; }
 
+/* Hover / active row fill (90% opacity so the backdrop bleeds through) */
+.row.is-open, .row.is-active { background: var(--hover-fill); }
+.row.is-open .label, .row.is-active .label,
+.row.is-open .value, .row.is-active .value { color: var(--hover-ink); }
+.row.is-open .divider, .row.is-active .divider { background: var(--hover-ink); }
+
+/* Dark mode: row fill goes black instead of white */
+body.dark .row.is-open, body.dark .row.is-active { background: var(--hover-fill-dark); }
+
+/* Image mode: text goes Red instead of TXT-2 */
+body.image .row.is-open .label, body.image .row.is-active .label,
+body.image .row.is-open .value, body.image .row.is-active .value { color: var(--hover-red); }
+body.image .row.is-open .divider, body.image .row.is-active .divider { background: var(--hover-red); }
+
+/* Solid mode: text uses the row's hue-ramp colour */
+body.solid .row.is-open .label, body.solid .row.is-active .label,
+body.solid .row.is-open .value, body.solid .row.is-active .value { color: var(--row-solid, var(--hover-ink)); }
+body.solid .row.is-open .divider, body.solid .row.is-active .divider { background: var(--row-solid, var(--hover-ink)); }
+
+/* Toggle icon fill state: filled bullet = mode active */
+body.dark .mode-icon { background: var(--ink); }
+body.image .image-icon { background: var(--ink); }
+/* Solid state: smaller filled dot inside the outline */
+body.solid .image-icon::after {
+  content: "";
+  position: absolute; inset: 3px;
+  background: var(--ink); border-radius: 50%;
+}
+
 /* =====================================================
    Work accordion — Panel
    ===================================================== */
@@ -373,3 +444,7 @@ a {
   .two-col .col-credits .bar .bar-label,
   .two-col .col-credits .text-sm { text-align: left; justify-content: flex-start; }
 }
+
+/* Mobile scroll spacer — lets the last row scroll up to reach the active line */
+.scroll-spacer { height: 0; }
+@media (max-width: 640px) { .scroll-spacer { height: 75vh; } }

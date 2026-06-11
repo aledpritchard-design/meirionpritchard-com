@@ -40,5 +40,6 @@ export type WorkProject = {
   title: string;
   category: string;
   value: string;
+  image?: string;
   blocks?: Block[];
 };

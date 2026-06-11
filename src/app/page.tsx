@@ -1,10 +1,12 @@
 import { SiteHeader, WorkSection } from "@/components/frame";
 import { WorkList } from "@/components/work";
+import { WorkModeProvider } from "@/components/work/WorkModeContext";
 import type { WorkProject } from "@/components/work/types";
 
 const closedRow: WorkProject = { title: "Wallpaper*", category: "Awards", value: "360°" };
 const airEverywhere: WorkProject = {
   title: "Air Everywhere", category: "Nike", value: "Campaign",
+  image: "/images/placeholder.jpg",
   blocks: [
     { type: "photo", variant: "frame" },
     { type: "caption", label: "Intro", size: "lg", text: "The campaign was capped off with a two day Nike By You event at Salone del Mobile in Milan, Italy." },
@@ -23,11 +25,12 @@ const SEED_PROJECTS: WorkProject[] = [closedRow, closedRow, closedRow, closedRow
 
 export default function Home() {
   return (
-    <>
+    <WorkModeProvider>
       <SiteHeader />
       <WorkSection>
         <WorkList projects={SEED_PROJECTS} />
       </WorkSection>
-    </>
+      <div className="scroll-spacer" aria-hidden="true" />
+    </WorkModeProvider>
   );
 }
