@@ -296,7 +296,6 @@ a {
    Work accordion — Panel
    ===================================================== */
 .panel {
-  border-left: var(--border); border-right: var(--border); border-bottom: var(--border);
   margin-top: -2px;
   display: flex; flex-direction: column;
 }
