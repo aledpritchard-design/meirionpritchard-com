@@ -1,10 +1,10 @@
-/**
- * Persistent controls rows beneath the hero, matching the prototype frame:
- * two sort-factor rows (Brand/Project, Category/Date) and the Mode/Image
- * toggle row. Static structure only — no toggle, sort, or drag behaviour.
- * Class names mirror the prototype so A1-21 and A1-22 can wire onto them.
- */
+"use client";
+
+import { useWorkMode } from "@/components/work/WorkModeContext";
+
 export function NavControls() {
+  const { toggleDark, cycleImage } = useWorkMode();
+
   return (
     <>
       {/* Sort factor rows — static structure; behaviour wired by A1-22 */}
@@ -41,11 +41,11 @@ export function NavControls() {
       {/* Mode / Image toggle row */}
       <div className="nav-row">
         <div className="nav-item">
-          <span className="toggle">
+          <span className="toggle" onClick={toggleDark} style={{ cursor: "pointer" }}>
             <span className="bullet mode-icon" />
             <span className="nav-label">Mode</span>
           </span>
-          <span className="toggle">
+          <span className="toggle" onClick={cycleImage} style={{ cursor: "pointer" }}>
             <span className="nav-label" style={{ textAlign: "right" }}>
               Image
             </span>

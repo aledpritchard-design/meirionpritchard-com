@@ -1,3 +1,5 @@
+export type HslColor = { h: number; s: number; l: number };
+
 export type PhotoBlock = {
   type: "photo";
   variant: "frame";
@@ -40,5 +42,6 @@ export type WorkProject = {
   title: string;
   category: string;
   value: string;
+  image?: string;
   blocks?: Block[];
 };

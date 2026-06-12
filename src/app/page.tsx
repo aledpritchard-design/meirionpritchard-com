@@ -1,10 +1,15 @@
+export const dynamic = "force-dynamic";
+
 import { SiteHeader, WorkSection } from "@/components/frame";
 import { WorkList } from "@/components/work";
-import type { WorkProject } from "@/components/work/types";
+import { WorkModeProvider } from "@/components/work/WorkModeContext";
+import type { HslColor, WorkProject } from "@/components/work/types";
+import { getSiteSettings } from "@/sanity/queries";
 
 const closedRow: WorkProject = { title: "Wallpaper*", category: "Awards", value: "360°" };
 const airEverywhere: WorkProject = {
   title: "Air Everywhere", category: "Nike", value: "Campaign",
+  image: "/images/placeholder.jpg",
   blocks: [
     { type: "photo", variant: "frame" },
     { type: "caption", label: "Intro", size: "lg", text: "The campaign was capped off with a two day Nike By You event at Salone del Mobile in Milan, Italy." },
@@ -21,13 +26,30 @@ const airEverywhere: WorkProject = {
 };
 const SEED_PROJECTS: WorkProject[] = [closedRow, closedRow, closedRow, closedRow, airEverywhere, closedRow, closedRow];
 
-export default function Home() {
+// Fallback to prototype token values (D015) when siteSettings hasn't been published yet.
+const DEFAULT_RAMP_START: HslColor = { h: 345, s: 40, l: 50 };
+const DEFAULT_RAMP_END: HslColor = { h: 189, s: 74, l: 62 };
+
+export default async function Home() {
+  const settings = await getSiteSettings();
+  const rampStart: HslColor = {
+    h: settings?.rampStart?.h ?? DEFAULT_RAMP_START.h,
+    s: settings?.rampStart?.s ?? DEFAULT_RAMP_START.s,
+    l: settings?.rampStart?.l ?? DEFAULT_RAMP_START.l,
+  };
+  const rampEnd: HslColor = {
+    h: settings?.rampEnd?.h ?? DEFAULT_RAMP_END.h,
+    s: settings?.rampEnd?.s ?? DEFAULT_RAMP_END.s,
+    l: settings?.rampEnd?.l ?? DEFAULT_RAMP_END.l,
+  };
+
   return (
-    <>
+    <WorkModeProvider>
       <SiteHeader />
       <WorkSection>
-        <WorkList projects={SEED_PROJECTS} />
+        <WorkList projects={SEED_PROJECTS} rampStart={rampStart} rampEnd={rampEnd} />
       </WorkSection>
-    </>
+      <div className="scroll-spacer" aria-hidden="true" />
+    </WorkModeProvider>
   );
 }

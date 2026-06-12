@@ -6,11 +6,12 @@ import type { WorkProject } from "./types";
 type Props = {
   project: WorkProject;
   isOpen: boolean;
+  rowSolid: string;
   onClick: () => void;
 };
 
 export const WorkRow = forwardRef<HTMLDivElement, Props>(function WorkRow(
-  { project, isOpen, onClick },
+  { project, isOpen, rowSolid, onClick },
   ref
 ) {
   const hasBlocks = Boolean(project.blocks && project.blocks.length > 0);
@@ -19,7 +20,10 @@ export const WorkRow = forwardRef<HTMLDivElement, Props>(function WorkRow(
     <div
       ref={ref}
       className={`row${isOpen ? " is-open" : ""}`}
-      style={hasBlocks ? undefined : { cursor: "default", pointerEvents: "none" }}
+      style={{
+        ...({ "--row-solid": rowSolid } as React.CSSProperties),
+        ...(hasBlocks ? undefined : { cursor: "default", pointerEvents: "none" }),
+      }}
       onClick={hasBlocks ? onClick : undefined}
       role={hasBlocks ? "button" : undefined}
       tabIndex={hasBlocks ? 0 : undefined}
