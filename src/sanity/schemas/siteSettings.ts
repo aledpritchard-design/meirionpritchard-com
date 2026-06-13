@@ -6,9 +6,6 @@ const hslFields = [
   defineField({ name: "l", title: "Lightness %", type: "number" }),
 ];
 
-// Singleton document for site-wide settings.
-// Full content model arrives in A1-12; this installs the rampStart/rampEnd
-// fields needed for the solid hue-ramp in A1-21.
 export const siteSettings = defineType({
   name: "siteSettings",
   title: "Site Settings",
@@ -27,6 +24,13 @@ export const siteSettings = defineType({
       description: "Last-row colour in solid image mode (D015). Defaults: h=189 s=74 l=62.",
       type: "object",
       fields: hslFields,
+    }),
+    defineField({
+      name: "gradientBackdrop",
+      title: "Gradient Backdrop",
+      description: "Full-page background image for gradient backdrop mode.",
+      type: "image",
+      options: { hotspot: true },
     }),
   ],
 });

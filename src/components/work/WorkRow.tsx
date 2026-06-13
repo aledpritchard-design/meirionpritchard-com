@@ -38,10 +38,10 @@ export const WorkRow = forwardRef<HTMLDivElement, Props>(function WorkRow(
           : undefined
       }
     >
-      <span className="label">{project.title}</span>
+      <span className="label">{project.brand}</span>
       <span className="divider" />
-      <span className="label">{project.category}</span>
-      <span className="value">{project.value}</span>
+      <span className="label">{project.project}</span>
+      <span className="value">{project.category}</span>
     </div>
   );
 });

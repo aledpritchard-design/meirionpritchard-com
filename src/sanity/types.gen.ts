@@ -23,6 +23,26 @@ export type WorkProject = {
   _rev: string;
   brand?: string;
   project?: string;
+  category?: string;
+  date?: string;
+  image?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
+  blocks?: Array<
+    | { _key: string; _type: "photo"; image?: { asset?: { _ref: string; _type: "reference" }; _type: "image" }; variant?: string }
+    | { _key: string; _type: "photoRow"; images?: Array<{ asset?: { _ref: string; _type: "reference" }; _type: "image"; _key: string }>; variant?: string }
+    | { _key: string; _type: "caption"; label?: string; size?: string; text?: string }
+    | { _key: string; _type: "split"; label?: string; text?: string; image?: { asset?: { _ref: string; _type: "reference" }; _type: "image" }; secondary?: string }
+    | { _key: string; _type: "resultsCredits"; results?: string; credits?: string }
+  >;
 };
 
 export type SanityImagePaletteSwatch = {
@@ -158,6 +178,17 @@ export type SiteSettings = {
   _rev: string;
   rampStart?: HslColorObject;
   rampEnd?: HslColorObject;
+  gradientBackdrop?: {
+    asset?: {
+      _ref: string;
+      _type: "reference";
+      _weak?: boolean;
+      [internalGroqTypeReferenceTo]?: "sanity.imageAsset";
+    };
+    hotspot?: SanityImageHotspot;
+    crop?: SanityImageCrop;
+    _type: "image";
+  };
 };
 
 export type AllSanitySchemaTypes =
@@ -177,25 +208,41 @@ export type AllSanitySchemaTypes =
 
 // Source: src/sanity/queries.ts
 // Variable: WORK_PROJECTS_QUERY
-// Query: *[_type == "workProject"] | order(brand asc) { _id, brand, project }
+// Query: *[_type == "workProject"] | order(date desc) { _id, brand, project, category, date, "image": image.asset->url, blocks[] { "type": _type, variant, label, size, text, secondary, results, credits, "image": image.asset->url, "images": images[].asset->url } }
 export type WORK_PROJECTS_QUERY_RESULT = Array<{
   _id: string;
   brand: string | null;
   project: string | null;
+  category: string | null;
+  date: string | null;
+  image: string | null;
+  blocks: Array<{
+    type: string | null;
+    variant: string | null;
+    label: string | null;
+    size: string | null;
+    text: string | null;
+    secondary: string | null;
+    results: string | null;
+    credits: string | null;
+    image: string | null;
+    images: (string | null)[] | null;
+  }> | null;
 }>;
 
 // Variable: SITE_SETTINGS_QUERY
-// Query: *[_type == "siteSettings"][0] { rampStart { h, s, l }, rampEnd { h, s, l } }
+// Query: *[_type == "siteSettings"][0] { rampStart { h, s, l }, rampEnd { h, s, l }, "gradientBackdrop": gradientBackdrop.asset->url }
 export type SITE_SETTINGS_QUERY_RESULT = {
   rampStart: { h: number | null; s: number | null; l: number | null } | null;
   rampEnd: { h: number | null; s: number | null; l: number | null } | null;
+  gradientBackdrop: string | null;
 } | null;
 
 // Query TypeMap
 import "@sanity/client";
 declare module "@sanity/client" {
   interface SanityQueries {
-    '\n  *[_type == "workProject"] | order(brand asc) { _id, brand, project }\n': WORK_PROJECTS_QUERY_RESULT;
-    '\n  *[_type == "siteSettings"][0] {\n    rampStart { h, s, l },\n    rampEnd { h, s, l }\n  }\n': SITE_SETTINGS_QUERY_RESULT;
+    '\n  *[_type == "workProject"] | order(date desc) {\n    _id,\n    brand,\n    project,\n    category,\n    date,\n    "image": image.asset->url,\n    blocks[] {\n      "type": _type,\n      variant,\n      label,\n      size,\n      text,\n      secondary,\n      results,\n      credits,\n      "image": image.asset->url,\n      "images": images[].asset->url\n    }\n  }\n': WORK_PROJECTS_QUERY_RESULT;
+    '\n  *[_type == "siteSettings"][0] {\n    rampStart { h, s, l },\n    rampEnd { h, s, l },\n    "gradientBackdrop": gradientBackdrop.asset->url\n  }\n': SITE_SETTINGS_QUERY_RESULT;
   }
 }

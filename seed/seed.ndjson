@@ -1,1 +1,29 @@
-{"_id":"workProject.smoke-test","_type":"workProject","brand":"Wallpaper*","project":"Foundation smoke test"}
+{"_id":"workProject.wallpaper-premio","_type":"workProject","brand":"Wallpaper*","project":"Premio","category":"Typography","date":"1996-01-01"}
+{"_id":"workProject.wallpaper-graphik","_type":"workProject","brand":"Wallpaper*","project":"Graphik","category":"Typography","date":"1997-01-01"}
+{"_id":"workProject.wallpaper-copan","_type":"workProject","brand":"Wallpaper*","project":"Copan","category":"Typography","date":"1998-01-01"}
+{"_id":"workProject.nike-futura","_type":"workProject","brand":"Nike","project":"Nike Futura","category":"Typography","date":"1999-01-01"}
+{"_id":"workProject.wallpaper-city-guides","_type":"workProject","brand":"Wallpaper*","project":"City Guides","category":"Publication","date":"2000-01-01"}
+{"_id":"workProject.bottega-art-of-collaboration","_type":"workProject","brand":"Bottega Veneta","project":"Art of Collaboration","category":"Publication","date":"2001-01-01"}
+{"_id":"workProject.victorinox-wallpaper-cuts","_type":"workProject","brand":"Victorinox","project":"Wallpaper* Cuts","category":"Product","date":"2002-01-01"}
+{"_id":"workProject.bottega-araki","_type":"workProject","brand":"Bottega Veneta","project":"Araki","category":"Fashion","date":"2003-01-01"}
+{"_id":"workProject.bottega-viviane-sassen","_type":"workProject","brand":"Bottega Veneta","project":"Viviane Sassen","category":"Fashion","date":"2004-01-01"}
+{"_id":"workProject.bottega-waiting-game","_type":"workProject","brand":"Bottega Veneta","project":"Waiting Game","category":"Fashion","date":"2005-01-01"}
+{"_id":"workProject.nike-hhbs","_type":"workProject","brand":"Nike","project":"HH&Bs","category":"Editorial","date":"2006-01-01"}
+{"_id":"workProject.nike-the-roll-out","_type":"workProject","brand":"Nike","project":"The Roll Out","category":"Editorial","date":"2007-01-01"}
+{"_id":"workProject.the-row-rebrand","_type":"workProject","brand":"The Row","project":"Rebrand","category":"Logo","date":"2008-01-01"}
+{"_id":"workProject.wallpaper-directors-cut","_type":"workProject","brand":"Wallpaper*","project":"Director's Cut","category":"Editorial","date":"2009-01-01"}
+{"_id":"workProject.wallpaper-ipad-edition","_type":"workProject","brand":"Wallpaper*","project":"iPad Edition","category":"Digital","date":"2010-01-01"}
+{"_id":"workProject.wallpaper-handmade","_type":"workProject","brand":"Wallpaper*","project":"Handmade","category":"360°","date":"2011-01-01"}
+{"_id":"workProject.wallpaper-guest-editors-1","_type":"workProject","brand":"Wallpaper*","project":"Guest Editors 1","category":"Editorial","date":"2012-01-01"}
+{"_id":"workProject.wallpaper-guest-editors-2","_type":"workProject","brand":"Wallpaper*","project":"Guest Editors 2","category":"Editorial","date":"2013-01-01"}
+{"_id":"workProject.wallpaper-sound-vision","_type":"workProject","brand":"Wallpaper*","project":"Sound + Vision","category":"Editorial","date":"2014-01-01"}
+{"_id":"workProject.wallpaper-custom-covers","_type":"workProject","brand":"Wallpaper*","project":"Custom Covers","category":"Interactive","date":"2015-01-01"}
+{"_id":"workProject.wallpaper-awards","_type":"workProject","brand":"Wallpaper*","project":"Awards","category":"360°","date":"2016-01-01"}
+{"_id":"workProject.nike-ycss","_type":"workProject","brand":"Nike","project":"YCSS","category":"Campaign","date":"2017-01-01"}
+{"_id":"workProject.nike-member-stories","_type":"workProject","brand":"Nike","project":"Member Stories","category":"Campaign","date":"2018-01-01"}
+{"_id":"workProject.nike-air-everywhere","_type":"workProject","brand":"Nike","project":"Air Everywhere","category":"Campaign","date":"2019-01-01"}
+{"_id":"workProject.nike-air-sesh","_type":"workProject","brand":"Nike","project":"Air Sesh","category":"Campaign","date":"2020-01-01"}
+{"_id":"workProject.nike-space-hippie","_type":"workProject","brand":"Nike","project":"Space Hippie","category":"Campaign","date":"2021-01-01"}
+{"_id":"workProject.nike-nike-by-you","_type":"workProject","brand":"Nike","project":"Nike By You","category":"Identity","date":"2022-01-01"}
+{"_id":"workProject.nike-one-nike-system","_type":"workProject","brand":"Nike","project":"One Nike System","category":"Identity","date":"2023-01-01"}
+{"_id":"workProject.nike-swoosh-journal","_type":"workProject","brand":"Nike","project":"Swoosh Journal","category":"Identity","date":"2024-01-01"}

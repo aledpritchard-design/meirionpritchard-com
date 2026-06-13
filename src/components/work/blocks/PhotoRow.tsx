@@ -6,15 +6,19 @@ const variantClass: Record<PhotoRowBlock["variant"], string> = {
   tall: "img-tall",
 };
 
-export function PhotoRow({ count, variant }: PhotoRowBlock) {
+export function PhotoRow({ variant, images }: PhotoRowBlock) {
   const cls = variantClass[variant];
-  return (
-    <div className="block">
-      <div className="photo-row">
-        {Array.from({ length: count }).map((_, i) => (
-          <div key={i} className={`img-ph ${cls}`} />
-        ))}
+  if (images && images.length > 0) {
+    return (
+      <div className="block">
+        <div className="photo-row">
+          {images.map((src, i) => (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img key={i} src={src} alt="" className={cls} />
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
+  }
+  return null;
 }
