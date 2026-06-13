@@ -39,9 +39,14 @@ export type Block =
   | ResultsCreditsBlock;
 
 export type WorkProject = {
-  title: string;
+  brand: string;
+  project: string;
   category: string;
-  value: string;
+  date: number;
   image?: string;
   blocks?: Block[];
 };
+
+export type FactorKey = "brand" | "project" | "category" | "date";
+export type FactorState = "off" | "desc" | "asc";
+export type Factor = { key: FactorKey; label: string; state: FactorState };
