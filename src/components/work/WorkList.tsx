@@ -1,11 +1,19 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import {
+  useRef,
+  useState,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+} from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { HslColor, WorkProject } from "./types";
 import { WorkRow } from "./WorkRow";
 import { WorkPanel } from "./WorkPanel";
 import { useWorkMode } from "./WorkModeContext";
+import { useWorkOrder } from "./WorkOrderContext";
 
 type Props = {
   projects: WorkProject[];
@@ -24,10 +32,44 @@ function solidColor(i: number, n: number, start: HslColor, end: HslColor): strin
   return `hsl(${h.toFixed(1)}, ${s.toFixed(1)}%, ${l.toFixed(1)}%)`;
 }
 
+function rowKey(p: WorkProject): string {
+  return `${p.brand}|${p.project}`;
+}
+
 export function WorkList({ projects, rampStart, rampEnd }: Props) {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  // Track the open project by stable key so it follows the row through re-sorts.
+  const [openProjectKey, setOpenProjectKey] = useState<string | null>(null);
   const prefersReduced = useReducedMotion();
   const { isDark, imageMode } = useWorkMode();
+  const { factors, isReorder } = useWorkOrder();
+
+  // Sort projects by active factors in priority order.
+  const sortedProjects = useMemo(() => {
+    const active = factors.filter((f) => f.state !== "off");
+    return [...projects].sort((a, b) => {
+      for (const f of active) {
+        const av = a[f.key] as string | number;
+        const bv = b[f.key] as string | number;
+        let r =
+          typeof av === "number" && typeof bv === "number"
+            ? av - bv
+            : String(av).localeCompare(String(bv));
+        if (f.state === "desc") r = -r;
+        if (r) return r;
+      }
+      return 0;
+    });
+  }, [projects, factors]);
+
+  const activeFactors = useMemo(() => factors.filter((f) => f.state !== "off"), [factors]);
+
+  // Derive openIndex from the open project key + current sort order.
+  // The panel follows the correct row automatically when factors change.
+  const openIndex = useMemo(() => {
+    if (openProjectKey === null) return null;
+    const idx = sortedProjects.findIndex((p) => rowKey(p) === openProjectKey);
+    return idx >= 0 ? idx : null;
+  }, [sortedProjects, openProjectKey]);
 
   const listRef = useRef<HTMLDivElement>(null);
   const rowRefs = useRef<Array<HTMLDivElement | null>>([]);
@@ -35,17 +77,20 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
   const bgRef0 = useRef<HTMLDivElement>(null);
   const bgRef1 = useRef<HTMLDivElement>(null);
 
-  // Mutable refs — avoid stale closures in stable callbacks
+  // Mutable refs — avoid stale closures in stable callbacks.
+  // Synced in a layoutEffect so they're always up to date by the time
+  // event handlers (scroll, pointer) run post-paint.
   const bgFrontRef = useRef<HTMLDivElement | null>(null);
   const activeIndexRef = useRef<number | null>(null);
   const openIndexRef = useRef<number | null>(null);
   const pointerXRef = useRef(-1);
   const pointerYRef = useRef(-1);
-  const projectsRef = useRef(projects);
+  const projectsRef = useRef(sortedProjects);
 
-  // Sync latest values into refs on every render
-  projectsRef.current = projects;
-  openIndexRef.current = openIndex;
+  useLayoutEffect(() => {
+    projectsRef.current = sortedProjects;
+    openIndexRef.current = openIndex;
+  });
 
   const openDuration = prefersReduced ? 0 : 1.2;
   const closeDuration = prefersReduced ? 0 : 0.6;
@@ -99,7 +144,6 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
     document.body.classList.remove("backdrop-on");
   }, []);
 
-  // Set the active row (DOM-direct; avoids React re-renders on every hover)
   const setActiveRow = useCallback(
     (idx: number | null) => {
       if (idx === activeIndexRef.current) return;
@@ -114,9 +158,8 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
     [setBackdropFromIndex]
   );
 
-  // While a project is open, hold the backdrop if the cursor is in list bounds
   const updateDesktopBackdrop = useCallback(() => {
-    if (activeIndexRef.current !== null) return; // hover already driving it
+    if (activeIndexRef.current !== null) return;
     const openIdx = openIndexRef.current;
     if (openIdx !== null && pointerYRef.current >= 0) {
       const listEl = listRef.current;
@@ -133,7 +176,6 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
     clearBackdrop();
   }, [setBackdropFromIndex, clearBackdrop]);
 
-  // Desktop pointer hit-test (re-aims on scroll so a stationary cursor still highlights)
   const hitTestHover = useCallback(() => {
     if (pointerXRef.current < 0) return;
     const el = document.elementFromPoint(pointerXRef.current, pointerYRef.current);
@@ -151,7 +193,6 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
     if (targetIdx === null) updateDesktopBackdrop();
   }, [setActiveRow, updateDesktopBackdrop]);
 
-  // Mobile: whichever row sits on the active line (27% down) gets the treatment
   const updateMobileActiveRow = useCallback(() => {
     if (window.scrollY < SCROLL_ARM) {
       setActiveRow(null);
@@ -173,7 +214,6 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
     if (hit === null) clearBackdrop();
   }, [setActiveRow, clearBackdrop]);
 
-  // Wire up pointer/scroll/resize listeners once on mount
   useEffect(() => {
     const mobileMQ = window.matchMedia("(max-width: 640px)");
 
@@ -223,7 +263,6 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
     };
   }, [hitTestHover, updateMobileActiveRow, setActiveRow, clearBackdrop]);
 
-  // Update desktop backdrop when the open project changes
   useEffect(() => {
     if (!window.matchMedia("(max-width: 640px)").matches) {
       updateDesktopBackdrop();
@@ -248,7 +287,6 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
     (nextIndex: number) => {
       const prevIndex = openIndex;
 
-      // Bottom-anchor: closing a panel above the new one clips from the top
       if (prevIndex !== null && nextIndex > prevIndex) {
         const innerEl = panelInnerRefs.current[prevIndex];
         if (innerEl) innerEl.style.justifyContent = "flex-end";
@@ -256,9 +294,8 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
 
       const rowEl = rowRefs.current[nextIndex];
       const pinTop = rowEl ? rowEl.getBoundingClientRect().top : null;
-      setOpenIndex(nextIndex);
+      setOpenProjectKey(rowKey(sortedProjects[nextIndex]));
 
-      // Viewport-pin RAF: compensate for layout shift while the new panel opens
       if (pinTop !== null && rowEl && !prefersReduced) {
         const startTime = performance.now();
         const totalDuration = openDuration * 1000;
@@ -272,11 +309,11 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
         requestAnimationFrame(raf);
       }
     },
-    [openIndex, openDuration, prefersReduced]
+    [openIndex, openDuration, prefersReduced, sortedProjects]
   );
 
   const handleClose = useCallback(() => {
-    setOpenIndex(null);
+    setOpenProjectKey(null);
   }, []);
 
   const handleRowClick = useCallback(
@@ -289,26 +326,35 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
 
   return (
     <>
-      {/* Fixed image-mode backdrop layers (crossfade pair) */}
       <div ref={bgRef0} className="bg-img" aria-hidden="true" />
       <div ref={bgRef1} className="bg-img" aria-hidden="true" />
 
       <div ref={listRef}>
-        {projects.map((project, i) => (
-          <div key={i}>
+        {sortedProjects.map((project, i) => (
+          <motion.div
+            key={rowKey(project)}
+            layout="position"
+            transition={{
+              layout: {
+                duration: isReorder && !prefersReduced ? 0.6 : 0,
+                ease: "easeOut",
+              },
+            }}
+          >
             <WorkRow
               ref={(el) => {
                 rowRefs.current[i] = el;
               }}
               project={project}
+              activeFactors={activeFactors}
               isOpen={openIndex === i}
-              rowSolid={solidColor(i, projects.length, rampStart, rampEnd)}
+              rowSolid={solidColor(i, sortedProjects.length, rampStart, rampEnd)}
               onClick={() => handleRowClick(i)}
             />
             <AnimatePresence mode="sync">
               {openIndex === i && project.blocks && project.blocks.length > 0 && (
                 <motion.div
-                  key={`panel-${i}`}
+                  key={`panel-${rowKey(project)}`}
                   initial="initial"
                   animate="animate"
                   exit="exit"
@@ -325,7 +371,7 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
                 </motion.div>
               )}
             </AnimatePresence>
-          </div>
+          </motion.div>
         ))}
       </div>
     </>

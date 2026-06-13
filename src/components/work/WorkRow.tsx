@@ -1,20 +1,23 @@
 "use client";
 
-import { forwardRef } from "react";
-import type { WorkProject } from "./types";
+import { Fragment, forwardRef } from "react";
+import type { WorkProject, Factor } from "./types";
 
 type Props = {
   project: WorkProject;
+  activeFactors: Factor[];
   isOpen: boolean;
   rowSolid: string;
   onClick: () => void;
 };
 
 export const WorkRow = forwardRef<HTMLDivElement, Props>(function WorkRow(
-  { project, isOpen, rowSolid, onClick },
+  { project, activeFactors, isOpen, rowSolid, onClick },
   ref
 ) {
   const hasBlocks = Boolean(project.blocks && project.blocks.length > 0);
+  const lefts = activeFactors.slice(0, -1);
+  const last = activeFactors.length > 0 ? activeFactors[activeFactors.length - 1] : null;
 
   return (
     <div
@@ -38,10 +41,13 @@ export const WorkRow = forwardRef<HTMLDivElement, Props>(function WorkRow(
           : undefined
       }
     >
-      <span className="label">{project.title}</span>
-      <span className="divider" />
-      <span className="label">{project.category}</span>
-      <span className="value">{project.value}</span>
+      {lefts.map((f, idx) => (
+        <Fragment key={f.key}>
+          <span className="label">{project[f.key]}</span>
+          {idx < lefts.length - 1 && <span className="divider" />}
+        </Fragment>
+      ))}
+      {last && <span className="value">{project[last.key]}</span>}
     </div>
   );
 });

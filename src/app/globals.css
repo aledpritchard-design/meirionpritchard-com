@@ -249,7 +249,11 @@ body.image.backdrop-on .bg-img.front { opacity: 1; }
   min-width: 0;
 }
 
-/* Sort factor cells (static structure; interactive behaviour wired by A1-22) */
+/* Right-aligned sort cells: handle on left, icon on right */
+.nav-item.right { justify-content: flex-end; }
+.nav-item.right .nav-label { text-align: right; }
+
+/* Sort factor cells */
 .sort-cell {
   cursor: pointer;
   position: relative;
@@ -259,12 +263,51 @@ body.image.backdrop-on .bg-img.front { opacity: 1; }
   top: 0;
   bottom: 0;
   width: 50%;
-  pointer-events: none;
+  cursor: grab;
 }
 .sort-cell:not(.right) .drag-zone { right: 0; }
 .sort-cell.right .drag-zone { left: 0; }
+.drag-zone:active { cursor: grabbing; }
+.sort-cell.drop-target { background: rgba(0, 0, 0, 0.08); }
 
-/* State icon: outline = off, filled circle = desc (Figma 41:6201) */
+/* Vacated slot (factor being dragged): hide content, show dot field */
+.sort-cell.vacated > * { visibility: hidden; }
+.sort-cell.vacated::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(#ebebeb 1.5px, transparent 1.6px);
+  background-size: 14px 14px;
+  background-position: center;
+}
+
+/* Drag ghost: outer wrapper follows the pointer; inner cell is inverted */
+.drag-ghost {
+  position: fixed;
+  z-index: 10;
+  pointer-events: none;
+}
+.drag-ghost.flying {
+  transition: left 200ms var(--anim-ease), top 200ms var(--anim-ease);
+}
+.drag-ghost > .nav-item {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  background: var(--paper);
+}
+.drag-ghost > .nav-item.inverted { background: var(--ink); }
+.drag-ghost > .nav-item.inverted .nav-label { color: var(--paper); }
+.drag-ghost > .nav-item.inverted .state-icon { border-color: var(--paper); color: var(--paper); }
+.drag-ghost > .nav-item.inverted .state-icon.fill { background: var(--paper); }
+.drag-ghost > .nav-item.inverted .state-icon.star { border-color: transparent; }
+.drag-ghost > .nav-item.inverted .drag-handle i { background: var(--paper); }
+
+@media (prefers-reduced-motion: reduce) {
+  .drag-ghost.flying { transition: none; }
+}
+
+/* State icon: outline = off, filled circle = desc, asterisk = asc (Figma 41:6201) */
 .state-icon {
   width: 16px;
   height: 16px;
@@ -272,9 +315,19 @@ body.image.backdrop-on .bg-img.front { opacity: 1; }
   box-sizing: border-box;
   border: 2px solid var(--ink);
   border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--ink);
 }
 .state-icon.fill {
   background: var(--ink);
+}
+.state-icon.star {
+  border-color: transparent;
+  overflow: visible;
 }
 
 /* 4-corner drag handle (Figma 50:7622): 2px dots at each corner of an 18px box */
@@ -283,6 +336,8 @@ body.image.backdrop-on .bg-img.front { opacity: 1; }
   width: 18px;
   height: 18px;
   flex-shrink: 0;
+  cursor: grab;
+  touch-action: none;
 }
 .drag-handle i {
   position: absolute;
