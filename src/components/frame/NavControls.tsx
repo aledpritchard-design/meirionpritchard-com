@@ -107,12 +107,11 @@ export function NavControls() {
 
       const finish = () => {
         outer.remove();
+        container
+          .querySelectorAll<HTMLElement>(".vacated, .drop-target")
+          .forEach((c) => c.classList.remove("vacated", "drop-target"));
         if (commit) {
           reorderFactors(from, over!);
-        } else {
-          container
-            .querySelectorAll<HTMLElement>(".vacated, .drop-target")
-            .forEach((c) => c.classList.remove("vacated", "drop-target"));
         }
       };
 
