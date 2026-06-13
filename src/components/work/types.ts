@@ -3,12 +3,13 @@ export type HslColor = { h: number; s: number; l: number };
 export type PhotoBlock = {
   type: "photo";
   variant: "frame";
+  image?: string;
 };
 
 export type PhotoRowBlock = {
   type: "photoRow";
-  count: number;
   variant: "portrait" | "square" | "tall";
+  images?: string[];
 };
 
 export type CaptionBlock = {
@@ -23,6 +24,7 @@ export type SplitBlock = {
   label: string;
   text: string;
   secondary: string;
+  image?: string;
 };
 
 export type ResultsCreditsBlock = {
@@ -39,9 +41,11 @@ export type Block =
   | ResultsCreditsBlock;
 
 export type WorkProject = {
-  title: string;
+  _id: string;
+  brand: string;
+  project: string;
   category: string;
-  value: string;
+  date?: string;
   image?: string;
   blocks?: Block[];
 };

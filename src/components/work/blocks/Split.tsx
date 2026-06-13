@@ -1,6 +1,6 @@
 import type { SplitBlock } from "../types";
 
-export function Split({ label, text, secondary }: SplitBlock) {
+export function Split({ label, text, secondary, image }: SplitBlock) {
   return (
     <>
       <div className="bar">
@@ -13,7 +13,12 @@ export function Split({ label, text, secondary }: SplitBlock) {
             <div className="text-lg">{text}</div>
             <div className="secondary">{secondary}</div>
           </div>
-          <div className="img-ph img-tall" />
+          {image ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={image} alt="" className="img-tall" />
+          ) : (
+            <div className="img-ph img-tall" />
+          )}
         </div>
       </div>
     </>

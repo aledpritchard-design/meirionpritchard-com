@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useState, useCallback, useEffect, useLayoutEffect } from "react";
 import { motion, AnimatePresence, useReducedMotion } from "framer-motion";
 import type { HslColor, WorkProject } from "./types";
 import { WorkRow } from "./WorkRow";
@@ -43,9 +43,11 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
   const pointerYRef = useRef(-1);
   const projectsRef = useRef(projects);
 
-  // Sync latest values into refs on every render
-  projectsRef.current = projects;
-  openIndexRef.current = openIndex;
+  // Sync latest values into refs after every render to keep stable callbacks fresh
+  useLayoutEffect(() => {
+    projectsRef.current = projects;
+    openIndexRef.current = openIndex;
+  });
 
   const openDuration = prefersReduced ? 0 : 1.2;
   const closeDuration = prefersReduced ? 0 : 0.6;
@@ -295,7 +297,7 @@ export function WorkList({ projects, rampStart, rampEnd }: Props) {
 
       <div ref={listRef}>
         {projects.map((project, i) => (
-          <div key={i}>
+          <div key={project._id}>
             <WorkRow
               ref={(el) => {
                 rowRefs.current[i] = el;
